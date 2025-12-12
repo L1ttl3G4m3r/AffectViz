@@ -1,6 +1,6 @@
 <!-- Animated Header -->
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?size=32&duration=3000&color=00F7FF&center=true&vCenter=true&width=700&lines=✨AffectViz;⚡+Beautiful.+Fast.+Modern.;🚀+Powered+by+SvelteKit+and+D3" />
+  <img src="https://readme-typing-svg.herokuapp.com?size=32&duration=3000&color=00F7FF&center=true&vCenter=true&width=700&lines=AffectViz;+Beautiful.+Fast.+Modern.;+Powered+by+SvelteKit+and+D3" />
 </p>
 
 <p align="center">
@@ -11,9 +11,7 @@
 
 ---
 
-## 🌈 Overview
-
-# 🌟 AffectViz – Intuitive Health & Mood Visualization
+#  AffectViz – Intuitive Health & Mood Visualization
 
 **Transform raw health data into insight, clarity, and action.**  
 
@@ -21,7 +19,7 @@ AffectViz is an innovative visualization tool designed to make complex health me
 
 ---
 
-## 🎯 Problem & Vision
+##  Problem & Vision
 
 People aged **30–50 with high daily workloads** often face challenges in balancing career, family, and personal well-being. Although health apps collect valuable data (steps, calories, sleep quality, mood) the insights remain buried in numbers. Users want:
 
@@ -33,7 +31,7 @@ AffectViz translates this raw data into a **digestible, emotionally resonant vis
 
 ---
 
-## 🧩 How AffectViz Works
+##  How AffectViz Works
 
 AffectViz integrates multiple dimensions of health into a **single, cohesive visualization**:
 
@@ -43,7 +41,7 @@ AffectViz integrates multiple dimensions of health into a **single, cohesive vis
 
 ---
 
-## ✨ Design Challenge
+##  Design Challenge
 
 The project focuses on creating a **high-fidelity prototype** that demonstrates:
 
@@ -54,7 +52,7 @@ The project focuses on creating a **high-fidelity prototype** that demonstrates:
 
 ---
 
-## 🌱 Goals
+##  Goals
 
 - Translate raw health metrics into a **clear, concise story**.  
 - Reveal connections between **behavior, stress, and recovery**.  
@@ -63,7 +61,7 @@ The project focuses on creating a **high-fidelity prototype** that demonstrates:
 
 ---
 
-## 🚀 The AffectViz Promise
+##  The AffectViz Promise
 
 > "See your data. Understand your behavior. Take meaningful action."  
 
@@ -72,18 +70,18 @@ With AffectViz, users don’t just track health metrics, they gain **insightful 
 
 ---
 
-## 🚀 Features
+##  Features
 
-- 🔥 Fast and lightweight  
-- 🎨 Fully customizable visual system  
-- 📱 Works on desktop & mobile  
-- ⚙️ Powered by **SvelteKit**, **D3**, and modern web tech  
-- 🧩 Modular and easy to extend  
-- 🌐 API-ready and framework-agnostic  
+-  Fast and lightweight  
+-  Fully customizable visual system  
+-  Works on desktop & mobile  
+-  Powered by **SvelteKit**, **D3**, and modern web tech  
+-  Modular and easy to extend  
+-  API-ready and framework-agnostic  
 
 ---
 
-## 📦 Installation
+##  Installation
 
 ```bash
 git clone https://github.com/yourusername/your-repo.git
