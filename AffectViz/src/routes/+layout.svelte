@@ -1,5 +1,7 @@
 <script>
 	import favicon from '$lib/assets/favicon.svg';
+	import 'gridstack/dist/gridstack.min.css';
+	import '../app.css';
 
 	let { children } = $props();
 </script>
