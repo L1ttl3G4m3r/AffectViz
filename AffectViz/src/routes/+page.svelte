@@ -1,6 +1,8 @@
 <script>
-    import DashboardGrid from "$lib/dashboard/DashboardGrid.svelte";
+    function login() {
+        window.location.href = '/login';
+    }
 </script>
 
-
-<DashboardGrid />
+<h1>Login with Polar</h1>
+<button on:click={login}>Login</button>
