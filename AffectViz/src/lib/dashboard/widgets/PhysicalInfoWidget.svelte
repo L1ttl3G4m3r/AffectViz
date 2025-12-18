@@ -2,29 +2,36 @@
   import { onMount } from 'svelte';
   let info = null;
   let error = null;
+  let loading = true;
 
   onMount(async () => {
     try {
       const res = await fetch('/api/physical-info');
-      if (!res.ok) throw new Error('Failed to fetch physical info');
-      info = await res.json();
+      const json = await res.json();
+      if (json.error) error = json.error;
+      else if (json.message) info = null;
+      else info = json;
     } catch (err) {
       error = err.message;
+    } finally {
+      loading = false;
     }
   });
 </script>
 
 <div>
   <h2>Physical Info</h2>
-  {#if error}
+  {#if loading}
+    <p>Loading...</p>
+  {:else if error}
     <p class="error">{error}</p>
   {:else if !info}
-    <p>Loading...</p>
+    <p>No physical info available</p>
   {:else}
     <ul>
-      {#each info as item}
-        <li>{item.timestamp}: {item.height} cm, {item.weight} kg</li>
-      {/each}
+      <li>Weight: {info.weight} kg</li>
+      <li>Height: {info.height} cm</li>
+      <li>VO₂ max: {info.vo2max}</li>
     </ul>
   {/if}
 </div>

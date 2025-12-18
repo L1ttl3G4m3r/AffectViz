@@ -2,31 +2,35 @@
   import { onMount } from 'svelte';
   let profile = null;
   let error = null;
+  let loading = true;
 
   onMount(async () => {
     try {
       const res = await fetch('/api/profile');
-      if (!res.ok) throw new Error('Failed to fetch profile');
-      profile = await res.json();
+      const json = await res.json();
+      if (json.error) error = json.error;
+      else if (json.message) profile = null;
+      else profile = json;
     } catch (err) {
       error = err.message;
+    } finally {
+      loading = false;
     }
   });
 </script>
 
 <div>
   <h2>Profile</h2>
-  {#if error}
+  {#if loading}
+    <p>Loading...</p>
+  {:else if error}
     <p class="error">{error}</p>
   {:else if !profile}
-    <p>Loading...</p>
+    <p>No profile data</p>
   {:else}
     <ul>
-      <li>Height: {profile.height} cm</li>
-      <li>Weight: {profile.weight} kg</li>
-      <li>Resting HR: {profile.restingHeartRate}</li>
-      <li>Max HR: {profile.maximumHeartRate}</li>
-      <li>VO₂max: {profile.vo2Max ?? 'N/A'}</li>
+      <li>Name: {profile.name}</li>
+      <li>Email: {profile.email}</li>
     </ul>
   {/if}
 </div>

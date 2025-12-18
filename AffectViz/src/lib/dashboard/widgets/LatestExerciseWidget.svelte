@@ -2,24 +2,31 @@
   import { onMount } from 'svelte';
   let exercise = null;
   let error = null;
+  let loading = true;
 
   onMount(async () => {
     try {
       const res = await fetch('/api/activity');
-      if (!res.ok) throw new Error('Failed to fetch latest exercise');
-      exercise = await res.json();
+      const json = await res.json();
+      if (json.error) error = json.error;
+      else if (json.message) exercise = null;
+      else exercise = json;
     } catch (err) {
       error = err.message;
+    } finally {
+      loading = false;
     }
   });
 </script>
 
 <div>
   <h2>Latest Exercise</h2>
-  {#if error}
+  {#if loading}
+    <p>Loading...</p>
+  {:else if error}
     <p class="error">{error}</p>
   {:else if !exercise}
-    <p>Loading...</p>
+    <p>No exercises available</p>
   {:else}
     <ul>
       <li>ID: {exercise.id}</li>

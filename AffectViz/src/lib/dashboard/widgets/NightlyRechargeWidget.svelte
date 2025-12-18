@@ -2,29 +2,35 @@
   import { onMount } from 'svelte';
   let recharge = null;
   let error = null;
+  let loading = true;
 
   onMount(async () => {
     try {
       const res = await fetch('/api/nightly-recharge');
-      if (!res.ok) throw new Error('Failed to fetch nightly recharge');
-      recharge = await res.json();
+      const json = await res.json();
+      if (json.error) error = json.error;
+      else if (json.message) recharge = null;
+      else recharge = json;
     } catch (err) {
       error = err.message;
+    } finally {
+      loading = false;
     }
   });
 </script>
 
 <div>
   <h2>Nightly Recharge</h2>
-  {#if error}
+  {#if loading}
+    <p>Loading...</p>
+  {:else if error}
     <p class="error">{error}</p>
   {:else if !recharge}
-    <p>Loading...</p>
+    <p>No data available</p>
   {:else}
     <ul>
-      {#each recharge as night}
-        <li>{new Date(night.date).toLocaleDateString()}: Score {night.score}</li>
-      {/each}
+      <li>Score: {recharge.score}</li>
+      <li>Status: {recharge.status}</li>
     </ul>
   {/if}
 </div>
