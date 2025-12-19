@@ -18,43 +18,47 @@ export async function GET({ url, cookies, fetch }) {
     return new Response('Missing authorization code', { status: 400 });
   }
 
-  // ---- Exchange authorization code for access token ----
-  const basicAuth = Buffer.from(
-    `${POLAR_CLIENT_ID}:${POLAR_CLIENT_SECRET}`
-  ).toString('base64');
+  // ---------------------------------------------------------------------------
+  // 1. Exchange authorization code for access token
+  // ---------------------------------------------------------------------------
+  const basicAuth = Buffer
+    .from(`${POLAR_CLIENT_ID}:${POLAR_CLIENT_SECRET}`)
+    .toString('base64');
 
-  const tokenResponse = await fetch(
-    'https://polarremote.com/v2/oauth2/token',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${basicAuth}`
-      },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: POLAR_REDIRECT_URI
-      })
-    }
-  );
+  const tokenRes = await fetch('https://polarremote.com/v2/oauth2/token', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${basicAuth}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: POLAR_REDIRECT_URI
+    })
+  });
 
-  const tokenData = await tokenResponse.json();
+  const tokenData = await tokenRes.json();
   console.log('[Callback] Token response:', tokenData);
 
-  if (!tokenData.access_token) {
-    console.error('[Callback] Token exchange failed');
+  if (!tokenRes.ok || !tokenData.access_token || !tokenData.x_user_id) {
     return new Response(
-      'Token exchange failed: ' + JSON.stringify(tokenData),
+      'Invalid token response: ' + JSON.stringify(tokenData),
       { status: 500 }
     );
   }
 
-  // ---- Store tokens securely in cookies ----
+  // ---------------------------------------------------------------------------
+  // 2. Persist tokens + Polar user id
+  // ---------------------------------------------------------------------------
+  const isProd =
+    process.env.VERCEL_ENV === 'production' ||
+    process.env.NODE_ENV === 'production';
+
   cookies.set('polar_access_token', tokenData.access_token, {
     path: '/',
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax'
   });
 
@@ -62,36 +66,51 @@ export async function GET({ url, cookies, fetch }) {
     cookies.set('polar_refresh_token', tokenData.refresh_token, {
       path: '/',
       httpOnly: true,
-      secure: true,
+      secure: isProd,
       sameSite: 'lax'
     });
   }
 
-  console.log('[Callback] Tokens stored in cookies');
+  // ⭐ THIS WAS THE MISSING COOKIE ⭐
+  cookies.set('polar_user_id', tokenData.x_user_id.toString(), {
+    path: '/',
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax'
+  });
 
-  // ---- Register user with Polar AccessLink (safe to repeat) ----
-  try {
-    const registerRes = await fetch(
-      'https://www.polaraccesslink.com/v3/users',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify({ 'user-id': '~user' })
-      }
+  console.log('[Callback] Tokens and user id stored in cookies');
+
+  // ---------------------------------------------------------------------------
+  // 3. Register user with Polar AccessLink (idempotent)
+  // ---------------------------------------------------------------------------
+  const registerRes = await fetch(
+    'https://www.polaraccesslink.com/v3/users',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({
+        'member-id': tokenData.x_user_id.toString()
+      })
+    }
+  );
+
+  if (![200, 201, 409].includes(registerRes.status)) {
+    const txt = await registerRes.text();
+    return new Response(
+      `User registration failed: ${registerRes.status} ${txt}`,
+      { status: 500 }
     );
-
-    const text = await registerRes.text();
-    const registerData = text ? JSON.parse(text) : {};
-    console.log('[Callback] User registration response:', registerData);
-  } catch (err) {
-    // Non-fatal — user may already be registered
-    console.warn('[Callback] User registration skipped:', err?.message);
   }
 
-  // ---- SUCCESS: redirect to dashboard ----
+  console.log('[Callback] User registration status:', registerRes.status);
+
+  // ---------------------------------------------------------------------------
+  // 4. Done
+  // ---------------------------------------------------------------------------
   throw redirect(302, '/dashboard');
 }
