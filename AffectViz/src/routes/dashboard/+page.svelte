@@ -7,7 +7,6 @@
   import DailyActivityWidget from '$lib/dashboard/widgets/DailyActivityWidget.svelte';
   import SleepWidget from '$lib/dashboard/widgets/SleepWidget.svelte';
   import NightlyRechargeWidget from '$lib/dashboard/widgets/NightlyRechargeWidget.svelte';
-  import PhysicalInfoWidget from '$lib/dashboard/widgets/PhysicalInfoWidget.svelte';
   let grid;
 
   onMount(async () => {
@@ -63,13 +62,6 @@
   <div class="grid-stack-item" gs-w="1" gs-h="2">
     <div class="grid-stack-item-content">
       <NightlyRechargeWidget />
-    </div>
-  </div>
-
-  <!-- Physical Info Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <PhysicalInfoWidget />
     </div>
   </div>
 </div>
