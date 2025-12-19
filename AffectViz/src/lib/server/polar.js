@@ -12,9 +12,11 @@ export async function getPolarAccessToken(cookies) {
     throw new Error('No Polar access token. User must login.');
   }
 
-  if (!accessToken && refreshToken) {
-    const basicAuth = Buffer.from(`${POLAR_CLIENT_ID}:${POLAR_CLIENT_SECRET}`).toString('base64');
+  // Helper to refresh token
+  const refreshAccessToken = async () => {
+    if (!refreshToken) throw new Error('No refresh token available');
 
+    const basicAuth = Buffer.from(`${POLAR_CLIENT_ID}:${POLAR_CLIENT_SECRET}`).toString('base64');
     const res = await fetch('https://polarremote.com/v2/oauth2/token', {
       method: 'POST',
       headers: {
@@ -30,23 +32,21 @@ export async function getPolarAccessToken(cookies) {
     const data = await res.json();
     if (!data.access_token) throw new Error('Failed to refresh Polar access token');
 
+    // Update cookies
     cookies.set('polar_access_token', data.access_token, {
-      path: '/',
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax'
+      path: '/', httpOnly: true, secure: true, sameSite: 'lax'
     });
-
     if (data.refresh_token) {
       cookies.set('polar_refresh_token', data.refresh_token, {
-        path: '/',
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax'
+        path: '/', httpOnly: true, secure: true, sameSite: 'lax'
       });
     }
+    return data.access_token;
+  };
 
-    accessToken = data.access_token;
+  // If access token exists, use it. Otherwise refresh.
+  if (!accessToken) {
+    accessToken = await refreshAccessToken();
   }
 
   return accessToken;
@@ -56,16 +56,32 @@ export async function getPolarAccessToken(cookies) {
    GENERIC POLAR FETCH
 ================================================= */
 export async function polarFetch(path, cookies, options = {}) {
-  const token = await getPolarAccessToken(cookies);
+  let token = await getPolarAccessToken(cookies);
 
-  const res = await fetch(`https://www.polaraccesslink.com/v3/${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      ...(options.headers ?? {})
+  const makeRequest = async () => {
+    const res = await fetch(`https://www.polaraccesslink.com/v3/${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        ...(options.headers ?? {})
+      }
+    });
+    return res;
+  };
+
+  let res = await makeRequest();
+
+  // If 401, try to refresh token once
+  if (res.status === 401) {
+    console.warn('[PolarFetch] Access token expired, refreshing...');
+    token = await getPolarAccessToken(cookies); // refresh token
+    res = await makeRequest();
+    if (res.status === 401) {
+      const text = await res.text();
+      throw new Error(`Polar API unauthorized: ${res.status} ${text}`);
     }
-  });
+  }
 
   if (!res.ok) {
     const text = await res.text();
@@ -73,30 +89,6 @@ export async function polarFetch(path, cookies, options = {}) {
   }
 
   return res.status === 204 ? null : res.json();
-}
-
-/* =================================================
-   FETCH LATEST EXERCISE
-================================================= */
-export async function fetchLatestExercise(cookies) {
-  let exercisesList = [];
-  try {
-    exercisesList = await polarFetch('users/~user/exercises', cookies);
-  } catch (err) {
-    if (err.message.includes('404')) return null;
-    throw err;
-  }
-
-  if (!Array.isArray(exercisesList) || exercisesList.length === 0) return null;
-
-  const latest = exercisesList.sort((a, b) => new Date(b.upload_time) - new Date(a.upload_time))[0];
-
-  try {
-    return await polarFetch(`exercises/${latest.id}`, cookies);
-  } catch (err) {
-    if (err.message.includes('404')) return null;
-    throw err;
-  }
 }
 
 /* =================================================

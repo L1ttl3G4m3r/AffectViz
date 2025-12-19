@@ -1,13 +1,18 @@
 import { json } from '@sveltejs/kit';
-import { fetchLatestExercise } from '$lib/server/polar.js';
+import { polarFetch } from '$lib/server/polar.js';
 
 export async function GET({ cookies }) {
   try {
-    const exercise = await fetchLatestExercise(cookies);
-    if (!exercise) return json({ message: 'No exercises available' });
-    return json(exercise);
+    // Fetch the raw list of exercises
+    const exercises = await polarFetch('exercises', cookies);
+
+    // Ensure we always return an array (empty if none)
+    const result = Array.isArray(exercises) ? exercises : exercises.exercises ?? [];
+
+    return json(result);
+
   } catch (err) {
-    console.error('[API] Activity fetch failed:', err);
-    return json({ error: err.message ?? 'Unknown error' });
+    console.error('[API] Failed to list exercises:', err);
+    return json({ error: err.message ?? 'Unknown error' }, { status: 500 });
   }
 }
