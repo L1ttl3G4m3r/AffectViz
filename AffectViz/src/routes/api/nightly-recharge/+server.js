@@ -1,18 +1,62 @@
 import { json } from '@sveltejs/kit';
 import { polarFetch } from '$lib/server/polar.js';
 
+function formatDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+
 export async function GET({ cookies }) {
   try {
-    // Fetch the raw list of nightly recharge data
-    const nightlyRecharge = await polarFetch('users/nightly-recharge', cookies);
+    const today = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(today.getDate() - 7);
 
-    // Ensure we always return an array (empty if none)
-    const result = Array.isArray(nightlyRecharge) ? nightlyRecharge : nightlyRecharge.nightly_recharge ?? [];
+    const nightlyRechargeData = [];
 
-    return json(result);
+    for (
+      let d = new Date(weekAgo);
+      d <= today;
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dateStr = formatDate(d);
+
+      try {
+        const nr = await polarFetch(
+          `users/nightly-recharge/${dateStr}`,
+          cookies
+        );
+
+        if (nr?.date) {
+          nightlyRechargeData.push(nr);
+        }
+
+        await delay(300);
+
+      } catch (err) {
+        // 404 = no nightly recharge that night
+        if (err.status !== 404) {
+          console.warn(
+            `Nightly Recharge fetch failed for ${dateStr}`,
+            err
+          );
+        }
+      }
+    }
+
+    // newest first
+    nightlyRechargeData.sort(
+      (a, b) => b.date.localeCompare(a.date)
+    );
+
+    return json(nightlyRechargeData);
 
   } catch (err) {
-    console.error('[API] Failed to list exercises:', err);
-    return json({ error: err.message ?? 'Unknown error' }, { status: 500 });
+    console.error('[API] Failed to fetch nightly recharge:', err);
+    return json(
+      { error: err.message ?? 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
