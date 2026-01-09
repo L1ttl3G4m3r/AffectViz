@@ -51,7 +51,7 @@ body {
 	transform: scale(1.05);
 }
 
-/* ===== Dashboard ===== */
+/* ===== Dashboard grid widgets ===== */
 .grid-stack {
 	min-height: 100vh;
 	padding: 1.5rem;
@@ -101,4 +101,29 @@ body {
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
+}
+
+/* ============================= */
+/* Dashboard Page Background */
+/* ============================= */
+
+.dashboard-page {
+	position: relative;
+	min-height: 100svh;
+	background: url('/background/dashboardBackground.png') center / cover no-repeat;
+}
+
+.water-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* Future UI above water */
+.dashboard-page > *:not(canvas) {
+	position: relative;
+	z-index: 1;
 }

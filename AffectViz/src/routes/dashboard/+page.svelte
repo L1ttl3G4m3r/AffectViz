@@ -1,67 +1,73 @@
 <script>
   import { onMount } from 'svelte';
 
-  // Import all widgets
-  import ProfileWidget from '$lib/dashboard/widgets/ProfileWidget.svelte';
-  import LatestExerciseWidget from '$lib/dashboard/widgets/LatestExerciseWidget.svelte';
-  import DailyActivityWidget from '$lib/dashboard/widgets/DailyActivityWidget.svelte';
-  import SleepWidget from '$lib/dashboard/widgets/SleepWidget.svelte';
-  import NightlyRechargeWidget from '$lib/dashboard/widgets/NightlyRechargeWidget.svelte';
-  let grid;
+  let canvas;
+  let ctx;
+  let t = 0;
+  let dpr = window.devicePixelRatio || 1;
 
-  onMount(async () => {
-    try {
-      const { GridStack } = await import('gridstack');
-      await new Promise(r => setTimeout(r, 50)); // wait for DOM
-      grid = GridStack.init({ 
-        column: 1,
-        cellHeight: 120,
-        margin: 16,
-        float: true,
-        resizable: false
-      }, document.querySelector('.grid-stack'));
-      grid.enableResize(false);
-    } catch (err) {
-      console.error('[Dashboard] GridStack init failed', err);
+  function resize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function noise(x, y, t) {
+    return (
+      Math.sin(x * 0.014 + t) +
+      Math.sin(y * 0.018 + t * 1.2) +
+      Math.sin((x + y) * 0.009 + t * 0.6)
+    );
+  }
+
+  function draw() {
+    const w = canvas.width / dpr;
+    const h = canvas.height / dpr;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'lighter';
+
+    for (let y = 0; y < h; y += 2) {
+      for (let x = 0; x < w; x += 2) {
+        const n = noise(x, y, t);
+
+        // softer, more transparent light
+        const intensity = Math.max(0, n) * 0.35;
+
+        if (intensity > 0.04) {
+          ctx.fillStyle = `rgba(
+            160,
+            220,
+            245,
+            ${Math.min(intensity, 0.08)}
+          )`;
+          ctx.fillRect(x, y, 2, 2);
+        }
+      }
     }
+
+    ctx.globalCompositeOperation = 'source-over';
+    t += 0.010;
+    requestAnimationFrame(draw);
+  }
+
+  onMount(() => {
+    ctx = canvas.getContext('2d');
+    resize();
+    window.addEventListener('resize', resize);
+    draw();
   });
 </script>
 
-<h1>Polar Dashboard</h1>
+<div class="dashboard-page">
+  <canvas class="water-canvas" bind:this={canvas}></canvas>
 
-<div class="grid-stack">
-  <!-- Profile Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <ProfileWidget />
-    </div>
-  </div>
-
-  <!-- Latest Exercise Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <LatestExerciseWidget />
-    </div>
-  </div>
-
-  <!-- Daily Activity Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <DailyActivityWidget />
-    </div>
-  </div>
-
-  <!-- Sleep Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <SleepWidget />
-    </div>
-  </div>
-
-  <!-- Nightly Recharge Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <NightlyRechargeWidget />
-    </div>
-  </div>
+  <!-- future dashboard UI goes here -->
 </div>
