@@ -4,5 +4,7 @@
     }
 </script>
 
-<h1>Login with Polar</h1>
-<button on:click={login}>Login</button>
+<div class="login-container">
+    <h1>Log in to see how your reef is doing today</h1>
+    <button on:click={login}>Log in</button>
+</div>
