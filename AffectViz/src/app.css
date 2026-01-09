@@ -10,15 +10,6 @@ body {
 
 	color: #1f2937;
 	font-family: 'Poppins', sans-serif;
-
-	/* prevent scroll and overscroll */
-	overflow: hidden;
-	overscroll-behavior-y: none;
-	-webkit-overflow-scrolling: auto;
-
-	/* iOS safe area padding */
-	padding-top: env(safe-area-inset-top);
-	padding-bottom: env(safe-area-inset-bottom);
 }
 
 .login-container {
