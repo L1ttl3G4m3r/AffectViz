@@ -123,7 +123,228 @@ body {
 }
 
 /* Future UI above water */
-.dashboard-page > *:not(canvas) {
+.dashboard-page > *:not(canvas):not(.overall-score-container) {
 	position: relative;
 	z-index: 1;
+}
+
+/* ============================= */
+/* Rock Midground Layer */
+/* ============================= */
+
+.rock-layer {
+	position: absolute;
+	bottom: -45vh; /* 👈 move it DOWN */
+	left: 50%;
+
+	transform: translateX(-50%);
+
+	width: min(75vw, 420px);
+	height: auto;
+
+	z-index: 1;
+	pointer-events: none;
+}
+
+.sport-coral {
+	position: absolute;
+	bottom: -25vh; /* 👈 slightly down */
+	left: 40%;
+
+	transform: translateX(-45%);
+
+	width: min(45vw, 420px);
+	height: auto;
+
+	z-index: 2;
+	pointer-events: none;
+}
+
+/* ============================= */
+/* Top Navigation */
+/* ============================= */
+
+.top-nav {
+	position: fixed;
+	top: env(safe-area-inset-top, 0);
+	left: 0;
+	right: 0;
+
+	padding: 1rem 1.25rem;
+
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	z-index: 3; /* above water canvas */
+	pointer-events: none; /* let only buttons receive input */
+}
+
+/* Re-enable interaction on buttons */
+.top-nav .bubble-button {
+	pointer-events: auto;
+}
+
+/* ============================= */
+/* Bubble Button */
+/* ============================= */
+
+.bubble-button {
+	position: relative;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+
+	border: none;
+	cursor: pointer;
+	padding: 0;
+
+	background: radial-gradient(
+		circle at 30% 30%,
+		rgba(255, 255, 255, 0.6),
+		rgba(180, 230, 255, 0.35) 40%,
+		rgba(120, 200, 240, 0.25) 70%
+	);
+
+	box-shadow:
+		inset -6px -8px 12px rgba(255, 255, 255, 0.35),
+		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
+		0 10px 20px rgba(0, 0, 0, 0.25);
+
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.bubble-button:hover,
+.bubble-button:active {
+	transform: scale(1.08);
+	box-shadow:
+		inset -4px -6px 10px rgba(255, 255, 255, 0.4),
+		inset 2px 4px 8px rgba(0, 0, 0, 0.12),
+		0 14px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================= */
+/* Icon handling */
+/* ============================= */
+
+.bubble-button .icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+
+	width: 70%;
+	height: 70%;
+
+	transform: translate(-50%, -50%);
+	object-fit: contain;
+	pointer-events: none;
+}
+
+/* Show static icon by default */
+.bubble-button .animated {
+	opacity: 0;
+}
+
+/* Swap on hover OR touch */
+.bubble-button:hover .animated,
+.bubble-button:active .animated {
+	opacity: 1;
+}
+
+.bubble-button:hover .static,
+.bubble-button:active .static {
+	opacity: 0;
+}
+
+/* ============================= */
+/* Overall Score – Layout */
+/* ============================= */
+
+.overall-score-container {
+	position: absolute;
+
+	/* Visual center of the screen */
+	top: 25%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+
+	z-index: 2; /* above water & rock */
+}
+
+/* ============================= */
+/* Overall Score Label */
+/* ============================= */
+
+.overall-score-label {
+	font-size: 1rem;
+	color: white;
+
+	opacity: 0.85;
+	font-weight: 300;
+	font-style: italic;
+
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================= */
+/* Overall Score Bubble */
+/* ============================= */
+
+.overall-score-bubble {
+	position: relative;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+
+	background: radial-gradient(
+		circle at 30% 30%,
+		rgba(255, 255, 255, 0.6),
+		rgba(180, 230, 255, 0.35) 40%,
+		rgba(120, 200, 240, 0.25) 70%
+	);
+
+	box-shadow:
+		inset -6px -8px 12px rgba(255, 255, 255, 0.35),
+		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
+		0 10px 20px rgba(0, 0, 0, 0.25);
+
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+}
+
+/* SVG ring fills the bubble */
+.overall-score-bubble svg {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+/* ============================= */
+/* Score Text (centered) */
+/* ============================= */
+
+.score-text {
+	position: absolute;
+	inset: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	font-size: 24px;
+	font-weight: 300;
+	color: white;
+	font-family: inherit;
+
+	z-index: 2;
 }
