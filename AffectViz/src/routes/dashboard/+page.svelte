@@ -53,10 +53,19 @@
     requestAnimationFrame(draw);
   }
 
-  /* ================= Overall score ================= */
+  /* ================= State ================= */
 
   let overallScore = null;
-  let scoreError = null;
+
+  let movementState = 0;
+  const MOVEMENT_STATES = 14;
+
+  let sleepState = 0;
+  const SLEEP_STATES = 14;
+
+  let workoutPlumes = Array(7).fill(false);
+
+  /* ================= Mount ================= */
 
   onMount(async () => {
     ctx = canvas.getContext('2d');
@@ -64,21 +73,19 @@
     window.addEventListener('resize', resize);
     draw();
 
-    try {
-      const res = await fetch('/api/overall-score', {
-        credentials: 'include'
-      });
+    const scoreRes = await fetch('/api/overall-score', { credentials: 'include' });
+    overallScore = (await scoreRes.json())?.overallScore ?? null;
 
-      if (!res.ok) throw new Error('Failed to load score');
+    const movementRes = await fetch('/api/movement-coral', { credentials: 'include' });
+    const movementGrowth = (await movementRes.json())?.growth ?? 0;
+    movementState = Math.min(MOVEMENT_STATES - 1, Math.floor(movementGrowth * MOVEMENT_STATES));
 
-      const data = await res.json();
-      if (data?.error) throw new Error(data.error);
+    const sleepRes = await fetch('/api/sleep-coral', { credentials: 'include' });
+    const sleepGrowth = (await sleepRes.json())?.growth ?? 0;
+    sleepState = Math.min(SLEEP_STATES - 1, Math.floor(sleepGrowth * SLEEP_STATES));
 
-      overallScore = data.overallScore;
-
-    } catch (err) {
-      scoreError = err.message;
-    }
+    const workoutRes = await fetch('/api/workout-coral', { credentials: 'include' });
+    workoutPlumes = (await workoutRes.json())?.plumes ?? workoutPlumes;
   });
 
   /* SVG math */
@@ -93,7 +100,7 @@
 <div class="dashboard-page">
   <canvas class="water-canvas" bind:this={canvas}></canvas>
 
-  <!-- Top navigation -->
+  <!-- Top navigation bubbles -->
   <div class="top-nav">
     <button class="bubble-button" aria-label="History">
       <img src="/icons/clock.png" alt="" class="icon static" />
@@ -106,23 +113,13 @@
     </button>
   </div>
 
-  <!-- Overall score bubble -->
+  <!-- Overall score -->
   {#if overallScore !== null}
     <div class="overall-score-container">
-      <div class="overall-score-label">
-        Daily score
-      </div>
-
+      <div class="overall-score-label">Daily score</div>
       <div class="overall-score-bubble">
         <svg viewBox="0 0 80 80">
-          <circle
-            cx="40"
-            cy="40"
-            r={radius}
-            stroke="rgba(255,255,255,0.25)"
-            stroke-width="3"
-            fill="none"
-          />
+          <circle cx="40" cy="40" r={radius} stroke="rgba(255,255,255,0.25)" stroke-width="3" fill="none" />
           <circle
             cx="40"
             cy="40"
@@ -134,18 +131,29 @@
             stroke-dasharray={circumference}
             stroke-dashoffset={dashOffset}
             transform="rotate(-90 40 40)"
-            style="transition: stroke-dashoffset 0.6s ease"
           />
         </svg>
-
-        <div class="score-text">
-          {overallScore}%
-        </div>
+        <div class="score-text">{overallScore}%</div>
       </div>
     </div>
   {/if}
 
-  <!-- Midground -->
+  <!-- Background layers -->
   <img src="/background/rock.png" alt="" class="rock-layer" />
   <img src="/background/sportCoral.png" alt="" class="sport-coral" />
+
+  <!-- Corals -->
+  <img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral" />
+  <img src={`/coralSleep/sleep-${sleepState}.png`} alt="" class="sleep-coral" />
+
+  <!-- Workout plumes -->
+  {#each workoutPlumes as visible, i}
+    {#if visible}
+      <img
+        src={`/coralWorkout/plume-${i}.png`}
+        alt="Workout plume"
+        class="workout-plume plume-{i}"
+      />
+    {/if}
+  {/each}
 </div>

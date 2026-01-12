@@ -51,58 +51,6 @@ body {
 	transform: scale(1.05);
 }
 
-/* ===== Dashboard grid widgets ===== */
-.grid-stack {
-	min-height: 100vh;
-	padding: 1.5rem;
-}
-
-/* ===== GridStack fixes ===== */
-.grid-stack-item {
-	overflow: visible !important;
-}
-
-.grid-stack-item-content {
-	overflow: visible !important;
-	border-radius: 22px;
-
-	background: #f1f3f5;
-
-	box-shadow:
-		28px 28px 50px rgba(13, 39, 80, 0.16),
-		-23px -23px 45px rgba(255, 255, 255, 1);
-}
-
-/* ===== Widget structure ===== */
-.widget {
-	width: 100%;
-	height: 100%;
-	display: flex;
-}
-
-/* Visual surface */
-.widget-surface {
-	background: #f1f3f5;
-	border-radius: 22px;
-	padding: 1rem;
-	display: flex;
-	flex-direction: column;
-}
-
-/* Subtle lift */
-.grid-stack-item:active .widget-surface {
-	box-shadow:
-		18px 18px 40px rgba(13, 39, 80, 0.18),
-		-12px -12px 28px rgba(255, 255, 255, 1);
-}
-
-/* Widget body */
-.widget-body {
-	flex: 1;
-	min-height: 0;
-	overflow: hidden;
-}
-
 /* ============================= */
 /* Dashboard Page Background */
 /* ============================= */
@@ -347,4 +295,28 @@ body {
 	font-family: inherit;
 
 	z-index: 2;
+}
+
+/* ============================= */
+/* Movement Coral Transitions */
+/* ============================= */
+
+.sport-coral {
+	transition:
+		opacity 0.4s ease,
+		transform 0.4s ease;
+	animation: coral-sway 12s ease-in-out infinite;
+	transform-origin: bottom center;
+}
+
+@keyframes coral-sway {
+	0% {
+		transform: translateX(-45%) rotate(-0.4deg);
+	}
+	50% {
+		transform: translateX(-45%) rotate(0.4deg);
+	}
+	100% {
+		transform: translateX(-45%) rotate(-0.4deg);
+	}
 }
