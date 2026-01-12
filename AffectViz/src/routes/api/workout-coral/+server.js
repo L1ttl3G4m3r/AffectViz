@@ -1,46 +1,91 @@
 import { json } from '@sveltejs/kit';
 import { polarFetch } from '$lib/server/polar.js';
 
-const DAYS = 7;
-const DAILY_GOAL_MINUTES = 60;
+/* ---------------- Utilities ---------------- */
+
+/**
+ * Convert ISO-8601 duration (PT2H44M, PT45M, PT1H)
+ * into total minutes
+ */
+function durationToMinutes(duration) {
+	if (!duration || typeof duration !== 'string') return 0;
+
+	let minutes = 0;
+
+	const hoursMatch = duration.match(/(\d+)H/);
+	const minutesMatch = duration.match(/(\d+)M/);
+
+	if (hoursMatch) minutes += parseInt(hoursMatch[1], 10) * 60;
+	if (minutesMatch) minutes += parseInt(minutesMatch[1], 10);
+
+	return minutes;
+}
+
+/* ---------------- Handler ---------------- */
 
 export async function GET({ cookies }) {
 	try {
-		// Fetch training sessions
-		const activities = await polarFetch('users/training-sessions', cookies);
+		/**
+		 * Polar exercises endpoint returns workouts
+		 * for roughly the last 30 days
+		 */
+		const exercises = await polarFetch('exercises', cookies);
 
-		const list = Array.isArray(activities) ? activities : (activities.training_sessions ?? []);
+		/**
+		 * Group total workout minutes per day
+		 * {
+		 *   '2024-03-18': 72,
+		 *   '2024-03-19': 45
+		 * }
+		 */
+		const minutesPerDay = {};
 
-		// Group total duration per day (in minutes)
-		const durationByDate = {};
-
-		for (const session of list) {
-			const date = session.start_time?.split('T')[0];
+		for (const ex of exercises ?? []) {
+			const date = ex.start_time?.slice(0, 10);
 			if (!date) continue;
 
-			const durationMinutes = (session.duration ?? 0) / 60;
+			const minutes = durationToMinutes(ex.duration);
 
-			durationByDate[date] = (durationByDate[date] ?? 0) + durationMinutes;
+			minutesPerDay[date] = (minutesPerDay[date] ?? 0) + minutes;
 		}
 
-		// Build last 7 days plume visibility
+		/**
+		 * Workout goal:
+		 * 60 minutes per day
+		 * 7 plumes = 7 days
+		 */
+		const WEEK_DAYS = 7;
+		const DAILY_GOAL_MINUTES = 60;
+
 		const today = new Date();
 		const plumes = [];
 
-		for (let i = 0; i < DAYS; i++) {
+		for (let i = 0; i < WEEK_DAYS; i++) {
 			const d = new Date(today);
 			d.setDate(today.getDate() - i);
-			const key = d.toISOString().split('T')[0];
 
-			const minutes = durationByDate[key] ?? 0;
-			plumes.push(minutes >= DAILY_GOAL_MINUTES);
+			const dateKey = d.toISOString().slice(0, 10);
+			const minutes = minutesPerDay[dateKey] ?? 0;
+
+			plumes.unshift({
+				date: dateKey,
+				minutes,
+				visible: minutes >= DAILY_GOAL_MINUTES
+			});
 		}
 
 		return json({
-			plumes // array of booleans, length 7
+			dailyGoalMinutes: DAILY_GOAL_MINUTES,
+			plumes
 		});
 	} catch (err) {
-		console.error('[workout-coral]', err);
-		return json({ error: err.message ?? 'Failed to load workout coral data' }, { status: 500 });
+		console.error('[workout-coral] Failed to load workout data:', err);
+
+		return json(
+			{
+				error: err.message ?? 'Failed to load workout coral data'
+			},
+			{ status: 500 }
+		);
 	}
 }

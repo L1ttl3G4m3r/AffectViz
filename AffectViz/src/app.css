@@ -94,20 +94,6 @@ body {
 	pointer-events: none;
 }
 
-.sport-coral {
-	position: absolute;
-	bottom: -25vh; /* 👈 slightly down */
-	left: 40%;
-
-	transform: translateX(-45%);
-
-	width: min(45vw, 420px);
-	height: auto;
-
-	z-index: 2;
-	pointer-events: none;
-}
-
 /* ============================= */
 /* Top Navigation */
 /* ============================= */
@@ -301,22 +287,75 @@ body {
 /* Movement Coral Transitions */
 /* ============================= */
 
+/* ============================= */
+/* Workout Coral Background (ANCHOR) */
+/* ============================= */
+
 .sport-coral {
-	transition:
-		opacity 0.4s ease,
-		transform 0.4s ease;
-	animation: coral-sway 12s ease-in-out infinite;
-	transform-origin: bottom center;
+	position: absolute;
+
+	/* YOU control placement here */
+	bottom: -25vh;
+	left: 20%;
+
+	width: min(45vw, 420px);
+	height: auto;
+
+	z-index: 2;
+	pointer-events: none;
 }
 
-@keyframes coral-sway {
-	0% {
-		transform: translateX(-45%) rotate(-0.4deg);
-	}
-	50% {
-		transform: translateX(-45%) rotate(0.4deg);
-	}
-	100% {
-		transform: translateX(-45%) rotate(-0.4deg);
-	}
+.sport-coral-image {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================= */
+/* Workout Coral – Base Style */
+/* ============================= */
+
+.workout-plume {
+	position: absolute;
+
+	width: min(20vw, 90px);
+	height: auto;
+
+	z-index: 4;
+	pointer-events: none;
+
+	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+}
+
+/* ============================= */
+/* Workout Coral – Plume Positions */
+/* ============================= */
+
+.plume-0 {
+	top: 40%;
+	left: -10%;
+}
+.plume-1 {
+	top: 15%;
+	left: 0%;
+}
+.plume-2 {
+	top: 25%;
+	left: 25%;
+}
+.plume-3 {
+	top: -10%;
+	left: 20%;
+}
+.plume-4 {
+	top: 5%;
+	left: 45%;
+}
+.plume-5 {
+	top: 47%;
+	left: 40%;
+}
+.plume-6 {
+	top: 28%;
+	left: 65%;
 }

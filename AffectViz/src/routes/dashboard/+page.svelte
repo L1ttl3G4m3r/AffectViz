@@ -140,20 +140,23 @@
 
   <!-- Background layers -->
   <img src="/background/rock.png" alt="" class="rock-layer" />
-  <img src="/background/sportCoral.png" alt="" class="sport-coral" />
 
   <!-- Corals -->
   <img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral" />
   <img src={`/coralSleep/sleep-${sleepState}.png`} alt="" class="sleep-coral" />
 
-  <!-- Workout plumes -->
-  {#each workoutPlumes as visible, i}
-    {#if visible}
-      <img
-        src={`/coralWorkout/plume-${i}.png`}
-        alt="Workout plume"
-        class="workout-plume plume-{i}"
-      />
-    {/if}
-  {/each}
+  <!-- Sport coral + workout plumes -->
+  <div class="sport-coral">
+    <img src="/background/sportCoral.png" alt="" class="sport-coral-image" />
+
+    {#each workoutPlumes as visible, i}
+      {#if visible}
+        <img
+          src={`/coralWorkout/plume-${i}.png`}
+          alt="Workout plume"
+          class={`workout-plume plume-${i}`}
+        />
+      {/if}
+    {/each}
+  </div>
 </div>
