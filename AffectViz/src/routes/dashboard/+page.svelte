@@ -143,20 +143,31 @@
 
   <!-- Corals -->
   <img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral" />
-  <img src={`/coralSleep/sleep-${sleepState}.png`} alt="" class="sleep-coral" />
+
+  <div class="sleep-anchor">
+    <div class="sleep-coral">
+      <img
+        src={`/coralSleep/sleep-${sleepState}.png`}
+        alt=""
+        class="sleep-coral-image"
+      />
+    </div>
+  </div>
 
   <!-- Sport coral + workout plumes -->
-  <div class="sport-coral">
-    <img src="/background/sportCoral.png" alt="" class="sport-coral-image" />
+  <div class="sport-anchor">
+    <div class="sport-coral">
+      <img src="/background/sportCoral.png" alt="" class="sport-coral-image" />
 
-    {#each workoutPlumes as plume, i}
-      {#if plume.visible}
-        <img
-          src={`/coralWorkout/plume-${i}.png`}
-          alt="Workout plume"
-          class={`workout-plume plume-${i}`}
-        />
-      {/if}
-    {/each}
+      {#each workoutPlumes as plume, i}
+        {#if plume.visible}
+          <img
+            src={`/coralWorkout/plume-${i}.png`}
+            alt="Workout plume"
+            class={`workout-plume plume-${i}`}
+          />
+        {/if}
+      {/each}
+    </div>
   </div>
 </div>

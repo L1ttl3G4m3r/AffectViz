@@ -2,7 +2,8 @@ import { json } from '@sveltejs/kit';
 import { polarFetch } from '$lib/server/polar.js';
 
 const DAYS = 7;
-const DAILY_MAX_GROWTH = 100 / DAYS; // 14.285714...
+const DAILY_MAX_GROWTH = 100 / DAYS; // 14.2857...
+const SLEEP_STATES = 14; // sleep-0.png → sleep-13.png
 
 export async function GET({ cookies }) {
 	try {
@@ -11,7 +12,7 @@ export async function GET({ cookies }) {
 
 		const list = Array.isArray(sleeps) ? sleeps : (sleeps.sleep ?? []);
 
-		// Take the last 7 nights only
+		// Take the last 7 nights
 		const last7 = list.slice(0, DAYS);
 
 		let totalGrowth = 0;
@@ -25,12 +26,19 @@ export async function GET({ cookies }) {
 			totalGrowth += dailyContribution;
 		}
 
-		// Normalize to 0 → 1
-		const growth = Math.min(totalGrowth / 100, 1);
+		// Clamp to 0–100
+		totalGrowth = Math.min(totalGrowth, 100);
+
+		// Normalize to 0–1
+		const growth = totalGrowth / 100;
+
+		// ✅ Map growth → sleep state (0–13)
+		const sleepState = Math.min(SLEEP_STATES - 1, Math.round(growth * (SLEEP_STATES - 1)));
 
 		return json({
-			totalGrowth, // percentage (0–100)
-			growth // normalized (0–1)
+			totalGrowth, // 0–100
+			growth, // 0–1
+			sleepState // 0–13 (FINAL ANSWER)
 		});
 	} catch (err) {
 		console.error('[sleep-coral]', err);
