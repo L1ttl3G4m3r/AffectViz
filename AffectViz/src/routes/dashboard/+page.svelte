@@ -141,8 +141,15 @@
   <!-- Background layers -->
   <img src="/background/rock.png" alt="" class="rock-layer" />
 
-  <!-- Corals -->
-  <img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral" />
+  <div class="movement-anchor">
+    <div class="movement-coral">
+      <img
+        src={`/coralMovement/movement-${movementState}.png`}
+        alt=""
+        class="movement-coral-image"
+      />
+    </div>
+  </div>
 
   <div class="sleep-anchor">
     <div class="sleep-coral">
