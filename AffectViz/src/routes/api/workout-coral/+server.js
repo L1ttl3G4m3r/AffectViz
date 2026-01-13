@@ -1,91 +1,105 @@
 import { json } from '@sveltejs/kit';
 import { polarFetch } from '$lib/server/polar.js';
 
-/* ---------------- Utilities ---------------- */
-
-/**
- * Convert ISO-8601 duration (PT2H44M, PT45M, PT1H)
- * into total minutes
- */
+/* -------------------------------------------------
+   ISO-8601 Duration → Minutes
+   Examples:
+   - PT45M
+   - PT1H30M
+   - PT210.026S
+-------------------------------------------------- */
 function durationToMinutes(duration) {
 	if (!duration || typeof duration !== 'string') return 0;
 
-	let minutes = 0;
+	const match = duration.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/);
 
-	const hoursMatch = duration.match(/(\d+)H/);
-	const minutesMatch = duration.match(/(\d+)M/);
+	if (!match) return 0;
 
-	if (hoursMatch) minutes += parseInt(hoursMatch[1], 10) * 60;
-	if (minutesMatch) minutes += parseInt(minutesMatch[1], 10);
+	const hours = Number(match[1] ?? 0);
+	const minutes = Number(match[2] ?? 0);
+	const seconds = Number(match[3] ?? 0);
 
-	return minutes;
+	return hours * 60 + minutes + seconds / 60;
 }
 
-/* ---------------- Handler ---------------- */
+/* -------------------------------------------------
+   Convert date to NL-local YYYY-MM-DD
+-------------------------------------------------- */
+function toNLDate(date) {
+	return new Date(date).toLocaleDateString('en-CA', {
+		timeZone: 'Europe/Amsterdam'
+	});
+}
 
+/* -------------------------------------------------
+   Get Monday of current week (NL timezone)
+-------------------------------------------------- */
+function getMondayNL() {
+	const now = new Date(
+		new Date().toLocaleString('en-US', {
+			timeZone: 'Europe/Amsterdam'
+		})
+	);
+
+	const day = now.getDay(); // 0=Sun, 1=Mon
+	const diff = day === 0 ? -6 : 1 - day;
+
+	now.setDate(now.getDate() + diff);
+	now.setHours(0, 0, 0, 0);
+
+	return now;
+}
+
+/* -------------------------------------------------
+   GET handler
+-------------------------------------------------- */
 export async function GET({ cookies }) {
 	try {
-		/**
-		 * Polar exercises endpoint returns workouts
-		 * for roughly the last 30 days
-		 */
-		const exercises = await polarFetch('exercises', cookies);
+		// Fetch all exercises for the authenticated Polar user
+		const response = await polarFetch('exercises', cookies);
 
-		/**
-		 * Group total workout minutes per day
-		 * {
-		 *   '2024-03-18': 72,
-		 *   '2024-03-19': 45
-		 * }
-		 */
+		const exercises = Array.isArray(response) ? response : (response?.exercises ?? []);
+
+		// Aggregate minutes per day
 		const minutesPerDay = {};
 
-		for (const ex of exercises ?? []) {
-			const date = ex.start_time?.slice(0, 10);
-			if (!date) continue;
+		for (const ex of exercises) {
+			if (!ex?.start_time || !ex?.duration) continue;
 
+			const dateKey = toNLDate(ex.start_time);
 			const minutes = durationToMinutes(ex.duration);
 
-			minutesPerDay[date] = (minutesPerDay[date] ?? 0) + minutes;
+			minutesPerDay[dateKey] = (minutesPerDay[dateKey] ?? 0) + minutes;
 		}
 
-		/**
-		 * Workout goal:
-		 * 60 minutes per day
-		 * 7 plumes = 7 days
-		 */
-		const WEEK_DAYS = 7;
 		const DAILY_GOAL_MINUTES = 60;
+		const monday = getMondayNL();
+		const todayKey = toNLDate(new Date());
 
-		const today = new Date();
 		const plumes = [];
 
-		for (let i = 0; i < WEEK_DAYS; i++) {
-			const d = new Date(today);
-			d.setDate(today.getDate() - i);
+		// Build current week (Mon → Sun)
+		for (let i = 0; i < 7; i++) {
+			const d = new Date(monday);
+			d.setDate(monday.getDate() + i);
 
-			const dateKey = d.toISOString().slice(0, 10);
-			const minutes = minutesPerDay[dateKey] ?? 0;
+			const dateKey = toNLDate(d);
+			const minutes = Math.round(minutesPerDay[dateKey] ?? 0);
 
-			plumes.unshift({
+			plumes.push({
 				date: dateKey,
 				minutes,
-				visible: minutes >= DAILY_GOAL_MINUTES
+				visible: dateKey <= todayKey && minutes >= DAILY_GOAL_MINUTES
 			});
 		}
 
 		return json({
+			weekStart: toNLDate(monday),
 			dailyGoalMinutes: DAILY_GOAL_MINUTES,
 			plumes
 		});
 	} catch (err) {
-		console.error('[workout-coral] Failed to load workout data:', err);
-
-		return json(
-			{
-				error: err.message ?? 'Failed to load workout coral data'
-			},
-			{ status: 500 }
-		);
+		console.error('[workout-coral] Failed:', err);
+		return json({ error: err?.message ?? 'Unknown error' }, { status: 500 });
 	}
 }

@@ -149,8 +149,8 @@
   <div class="sport-coral">
     <img src="/background/sportCoral.png" alt="" class="sport-coral-image" />
 
-    {#each workoutPlumes as visible, i}
-      {#if visible}
+    {#each workoutPlumes as plume, i}
+      {#if plume.visible}
         <img
           src={`/coralWorkout/plume-${i}.png`}
           alt="Workout plume"
