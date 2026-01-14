@@ -331,14 +331,18 @@ body {
 	display: block;
 }
 
-.movement-overlay {
+.movement-overlay,
+.sleep-overlay,
+.workout-overlay {
 	position: relative;
 	min-height: 100%;
 	color: white;
 	padding-bottom: 8rem;
 }
 
-.movement-info-scroll {
+.movement-info-scroll,
+.sleep-info-scroll,
+.workout-info-scroll {
 	position: fixed;
 	top: env(safe-area-inset-top, 5rem);
 
@@ -353,14 +357,18 @@ body {
 	z-index: 4;
 }
 
-.movement-text {
+.movement-text,
+.sleep-text,
+.workout-text {
 	max-width: 320px;
 	margin: 4rem auto 2rem;
 	font-weight: 300;
 	line-height: 1.6;
 }
 
-.movement-stats {
+.movement-stats,
+.sleep-stats,
+.workout-stats {
 	margin: 2rem auto;
 	display: flex;
 	justify-content: space-evenly;
@@ -372,7 +380,9 @@ body {
 	width: min(90%, 360px);
 }
 
-.movement-stats .divider {
+.movement-stats .divider,
+.sleep-stats .divider,
+.workout-stats .divider {
 	width: 1px;
 	height: 32px;
 	background: rgba(0, 0, 0, 0.1);
@@ -388,12 +398,16 @@ body {
 	display: block;
 }
 
-.movement-chart {
+.movement-chart,
+.sleep-chart,
+.workout-chart {
 	margin: 1rem auto;
 	width: min(90%, 360px);
 }
 
-.movement-overlay-coral {
+.movement-overlay-coral,
+.sleep-overlay-coral,
+.workout-overlay-coral {
 	position: fixed;
 	bottom: -10vh;
 	left: -10vw;
@@ -407,7 +421,9 @@ body {
 	z-index: 1;
 }
 
-.movement-overlay-title {
+.movement-overlay-title,
+.sleep-overlay-title,
+.workout-overlay-title {
 	position: fixed;
 	left: 1rem;
 	bottom: env(safe-area-inset-bottom, 1rem);
@@ -517,10 +533,11 @@ body {
 	all: unset;
 	position: absolute;
 	inset: 0;
+	pointer-events: auto;
 }
 
 .coral-overlay-panel {
-	pointer-events: none;
+	pointer-events: auto;
 	position: absolute;
 	inset: 0;
 
@@ -532,7 +549,7 @@ body {
 	position: sticky;
 	top: 0;
 	padding: 1rem;
-	z-index: 2;
+	z-index: 1001;
 }
 
 .back-button {

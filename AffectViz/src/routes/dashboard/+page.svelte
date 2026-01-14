@@ -5,10 +5,13 @@
 
 	import CoralOverlay from '$lib/components/CoralOverlay.svelte';
 	import MovementCoralDetail from '$lib/corals/movement/MovementCoralDetail.svelte';
-	import { active } from 'd3';
+	import SleepCoralDetail from '$lib/corals/sleep/SleepCoralDetail.svelte';
+	import WorkoutCoralDetail from '$lib/corals/workout/WorkoutCoralDetail.svelte';
 
 	let activeCoral = null;
 	let movementData = null;
+	let sleepData = null;
+	let workoutData = null;
 
 	/* ================= Water animation ================= */
 
@@ -118,18 +121,24 @@
 			Math.floor(movementGrowth * MOVEMENT_STATES)
 		);
 
-		/* ---------- Sleep coral ---------- */
+		/* ---------- Sleep coral (❗ FIXED) ---------- */
 		const sleepRes = await fetch('/api/sleep-coral', { credentials: 'include' });
-		const sleepGrowth = (await sleepRes.json())?.growth ?? 0;
+		sleepData = await sleepRes.json();
+
+		const sleepGrowth = sleepData?.growth ?? 0;
 		sleepState = Math.min(
 			SLEEP_STATES - 1,
 			Math.floor(sleepGrowth * SLEEP_STATES)
 		);
 
-		/* ---------- Workout plumes ---------- */
+		/* ---------- Workout coral (❗ FIXED & SAFE) ---------- */
 		const workoutRes = await fetch('/api/workout-coral', { credentials: 'include' });
 		const workoutJson = await workoutRes.json();
 
+		// data for overlay
+		workoutData = workoutJson;
+
+		// visual plumes (keep separate!)
 		workoutPlumes = (workoutJson?.plumes ?? []).map(v =>
 			typeof v === 'object'
 				? v
@@ -264,21 +273,13 @@
 
 <!-- Movement overlay -->
 {#if activeCoral}
-	<CoralOverlay
-		open
-		title=""
-		on:close={() => activeCoral = null}
-	>
+	<CoralOverlay open on:close={() => activeCoral = null}>
 		{#if activeCoral === 'movement' && movementData}
 			<MovementCoralDetail data={movementData} />
-		{:else if activeCoral === 'sport'}
-			<p style="color:white; padding:2rem">
-				Sport coral overlay coming soon
-			</p>
-		{:else if activeCoral === 'sleep'}
-			<p style="color:white; padding:2rem">
-				Sleep coral overlay coming soon
-			</p>
+		{:else if activeCoral === 'sleep' && sleepData}
+			<SleepCoralDetail data={sleepData} />
+		{:else if activeCoral === 'sport' && workoutData}
+			<WorkoutCoralDetail data={workoutData} />
 		{:else}
 			<p style="color:white; padding:2rem">
 				Loading…
@@ -286,3 +287,4 @@
 		{/if}
 	</CoralOverlay>
 {/if}
+
