@@ -1,3 +1,8 @@
+:root {
+	--ring-sleep: rgba(180, 160, 255, 0.95); /* lavender */
+	--ring-cardio: rgba(255, 170, 120, 0.95); /* peach */
+}
+
 /* ===== Page background ===== */
 html,
 body {
@@ -51,54 +56,350 @@ body {
 	transform: scale(1.05);
 }
 
-/* ===== Dashboard ===== */
-.grid-stack {
-	min-height: 100vh;
-	padding: 1.5rem;
+/* ============================= */
+/* Dashboard Page Background */
+/* ============================= */
+
+.dashboard-page {
+	position: relative;
+	min-height: 100svh;
+	background: url('/background/dashboardBackground.png') center / cover no-repeat;
 }
 
-/* ===== GridStack fixes ===== */
-.grid-stack-item {
-	overflow: visible !important;
-}
-
-.grid-stack-item-content {
-	overflow: visible !important;
-	border-radius: 22px;
-
-	background: #f1f3f5;
-
-	box-shadow:
-		28px 28px 50px rgba(13, 39, 80, 0.16),
-		-23px -23px 45px rgba(255, 255, 255, 1);
-}
-
-/* ===== Widget structure ===== */
-.widget {
+.water-canvas {
+	position: absolute;
+	inset: 0;
 	width: 100%;
 	height: 100%;
-	display: flex;
+	pointer-events: none;
+	z-index: 0;
 }
 
-/* Visual surface */
-.widget-surface {
-	background: #f1f3f5;
-	border-radius: 22px;
-	padding: 1rem;
+/* Future UI above water */
+.dashboard-page > *:not(canvas):not(.overall-score-container) {
+	position: relative;
+	z-index: 1;
+}
+
+/* ============================= */
+/* Rock Midground Layer */
+/* ============================= */
+
+.rock-layer {
+	position: absolute;
+	bottom: -45vh; /* 👈 move it DOWN */
+	left: 50%;
+
+	transform: translateX(-50%);
+
+	width: min(75vw, 420px);
+	height: auto;
+
+	z-index: 1;
+	pointer-events: none;
+}
+
+/* ============================= */
+/* Top Navigation */
+/* ============================= */
+
+.top-nav {
+	position: fixed;
+	top: env(safe-area-inset-top, 0);
+	left: 0;
+	right: 0;
+
+	padding: 1rem 1.25rem;
+
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	z-index: 3; /* above water canvas */
+	pointer-events: none; /* let only buttons receive input */
+}
+
+/* Re-enable interaction on buttons */
+.top-nav .bubble-button {
+	pointer-events: auto;
+}
+
+/* ============================= */
+/* Bubble Button */
+/* ============================= */
+
+.bubble-button {
+	position: relative;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+
+	border: none;
+	cursor: pointer;
+	padding: 0;
+
+	background: radial-gradient(
+		circle at 30% 30%,
+		rgba(255, 255, 255, 0.6),
+		rgba(180, 230, 255, 0.35) 40%,
+		rgba(120, 200, 240, 0.25) 70%
+	);
+
+	box-shadow:
+		inset -6px -8px 12px rgba(255, 255, 255, 0.35),
+		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
+		0 10px 20px rgba(0, 0, 0, 0.25);
+
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.bubble-button:hover,
+.bubble-button:active {
+	transform: scale(1.08);
+	box-shadow:
+		inset -4px -6px 10px rgba(255, 255, 255, 0.4),
+		inset 2px 4px 8px rgba(0, 0, 0, 0.12),
+		0 14px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================= */
+/* Icon handling */
+/* ============================= */
+
+.bubble-button .icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+
+	width: 70%;
+	height: 70%;
+
+	transform: translate(-50%, -50%);
+	object-fit: contain;
+	pointer-events: none;
+}
+
+/* Show static icon by default */
+.bubble-button .animated {
+	opacity: 0;
+}
+
+/* Swap on hover OR touch */
+.bubble-button:hover .animated,
+.bubble-button:active .animated {
+	opacity: 1;
+}
+
+.bubble-button:hover .static,
+.bubble-button:active .static {
+	opacity: 0;
+}
+
+/* ============================= */
+/* Overall Score – Layout */
+/* ============================= */
+
+.overall-score-container {
+	position: absolute;
+
+	/* Visual center of the screen */
+	top: 25%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
 	display: flex;
 	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+
+	z-index: 2; /* above water & rock */
 }
 
-/* Subtle lift */
-.grid-stack-item:active .widget-surface {
+/* ============================= */
+/* Overall Score Label */
+/* ============================= */
+
+.overall-score-label {
+	font-size: 1rem;
+	color: white;
+
+	opacity: 0.85;
+	font-weight: 300;
+	font-style: italic;
+
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================= */
+/* Overall Score Bubble */
+/* ============================= */
+
+.overall-score-bubble {
+	position: relative;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+
+	background: radial-gradient(
+		circle at 30% 30%,
+		rgba(255, 255, 255, 0.6),
+		rgba(180, 230, 255, 0.35) 40%,
+		rgba(120, 200, 240, 0.25) 70%
+	);
+
 	box-shadow:
-		18px 18px 40px rgba(13, 39, 80, 0.18),
-		-12px -12px 28px rgba(255, 255, 255, 1);
+		inset -6px -8px 12px rgba(255, 255, 255, 0.35),
+		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
+		0 10px 20px rgba(0, 0, 0, 0.25);
+
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
 }
 
-/* Widget body */
-.widget-body {
-	flex: 1;
-	min-height: 0;
-	overflow: hidden;
+/* SVG ring fills the bubble */
+.overall-score-bubble svg {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+/* ============================= */
+/* Score Text (centered) */
+/* ============================= */
+
+.score-text {
+	position: absolute;
+	inset: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	font-size: 24px;
+	font-weight: 300;
+	color: white;
+	font-family: inherit;
+
+	z-index: 3;
+}
+
+.sleep-anchor,
+.sport-anchor,
+.movement-anchor {
+	position: absolute;
+	inset: 0; /* full scene */
+	pointer-events: none;
+}
+
+/* ============================= */
+/* Movement Coral (ANCHOR) */
+/* ============================= */
+
+.movement-coral {
+	position: absolute;
+	bottom: -15vh;
+	left: -2vw;
+
+	width: min(60vw, 420px);
+	z-index: 8;
+	isolation: isolate;
+}
+
+.movement-coral-image {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================= */
+/* Sleep Coral (ANCHOR) */
+/* ============================= */
+
+.sleep-coral {
+	position: absolute;
+	bottom: -32vh;
+	right: -12vw;
+
+	width: min(80vw, 420px);
+	z-index: 10;
+	isolation: isolate;
+}
+
+.sleep-coral-image {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================= */
+/* Workout Coral Background (ANCHOR) */
+/* ============================= */
+
+.sport-coral {
+	position: absolute;
+	bottom: -48vh;
+	left: 20%;
+
+	width: min(45vw, 420px);
+	z-index: 2;
+}
+
+.sport-coral-image {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================= */
+/* Workout Coral – Base Style */
+/* ============================= */
+
+.workout-plume {
+	position: absolute;
+
+	width: min(20vw, 90px);
+	height: auto;
+
+	z-index: 4;
+	pointer-events: none;
+
+	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+}
+
+/* ============================= */
+/* Workout Coral – Plume Positions */
+/* ============================= */
+
+.plume-0 {
+	top: 40%;
+	left: -10%;
+}
+.plume-1 {
+	top: 15%;
+	left: 0%;
+}
+.plume-2 {
+	top: 25%;
+	left: 25%;
+}
+.plume-3 {
+	top: -10%;
+	left: 20%;
+}
+.plume-4 {
+	top: 5%;
+	left: 45%;
+}
+.plume-5 {
+	top: 47%;
+	left: 40%;
+}
+.plume-6 {
+	top: 28%;
+	left: 65%;
 }

@@ -1,67 +1,216 @@
 <script>
-  import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
-  // Import all widgets
-  import ProfileWidget from '$lib/dashboard/widgets/ProfileWidget.svelte';
-  import LatestExerciseWidget from '$lib/dashboard/widgets/LatestExerciseWidget.svelte';
-  import DailyActivityWidget from '$lib/dashboard/widgets/DailyActivityWidget.svelte';
-  import SleepWidget from '$lib/dashboard/widgets/SleepWidget.svelte';
-  import NightlyRechargeWidget from '$lib/dashboard/widgets/NightlyRechargeWidget.svelte';
-  let grid;
+	/* ================= Water animation ================= */
 
-  onMount(async () => {
-    try {
-      const { GridStack } = await import('gridstack');
-      await new Promise(r => setTimeout(r, 50)); // wait for DOM
-      grid = GridStack.init({ 
-        column: 1,
-        cellHeight: 120,
-        margin: 16,
-        float: true,
-        resizable: false
-      }, document.querySelector('.grid-stack'));
-      grid.enableResize(false);
-    } catch (err) {
-      console.error('[Dashboard] GridStack init failed', err);
-    }
-  });
+	let canvas;
+	let ctx;
+	let t = 0;
+	const dpr = window.devicePixelRatio || 1;
+
+	function resize() {
+		const w = window.innerWidth;
+		const h = window.innerHeight;
+
+		canvas.width = w * dpr;
+		canvas.height = h * dpr;
+
+		canvas.style.width = w + 'px';
+		canvas.style.height = h + 'px';
+
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+	}
+
+	function noise(x, y, t) {
+		return (
+			Math.sin(x * 0.014 + t) +
+			Math.sin(y * 0.018 + t * 1.2) +
+			Math.sin((x + y) * 0.009 + t * 0.6)
+		);
+	}
+
+	function draw() {
+		const w = canvas.width / dpr;
+		const h = canvas.height / dpr;
+
+		ctx.clearRect(0, 0, w, h);
+		ctx.globalCompositeOperation = 'lighter';
+
+		for (let y = 0; y < h; y += 2) {
+			for (let x = 0; x < w; x += 2) {
+				const n = noise(x, y, t);
+				const intensity = Math.max(0, n) * 0.35;
+
+				if (intensity > 0.04) {
+					ctx.fillStyle = `rgba(160,220,245,${Math.min(intensity, 0.08)})`;
+					ctx.fillRect(x, y, 2, 2);
+				}
+			}
+		}
+
+		ctx.globalCompositeOperation = 'source-over';
+		t += 0.01;
+		requestAnimationFrame(draw);
+	}
+
+	/* ================= Scores ================= */
+
+	let overallScore = null;
+	let sleepScore = 0;
+	let cardioScore = 0;
+
+	/* ================= Coral State ================= */
+
+	let movementState = 0;
+	const MOVEMENT_STATES = 14;
+
+	let sleepState = 0;
+	const SLEEP_STATES = 14;
+
+	let workoutPlumes = Array(7).fill({ visible: false });
+
+	/* ================= SVG math ================= */
+
+	const circumference = (r) => 2 * Math.PI * r;
+	const dashOffset = (score, r) =>
+		circumference(r) * (1 - score / 100);
+
+	function polarToCartesian(cx, cy, r, percent) {
+		const angle = (percent / 100) * 2 * Math.PI - Math.PI / 2;
+		return {
+			x: cx + r * Math.cos(angle),
+			y: cy + r * Math.sin(angle)
+		};
+	}
+
+	$: cardioDot = polarToCartesian(40, 40, 24, cardioScore);
+	$: sleepDot = polarToCartesian(40, 40, 18, sleepScore);
+
+	/* ================= Mount ================= */
+
+	onMount(async () => {
+		ctx = canvas.getContext('2d');
+		resize();
+		window.addEventListener('resize', resize);
+		draw();
+
+		/* ---------- Scores ---------- */
+		const res = await fetch('/api/overall-score', { credentials: 'include' });
+		const data = await res.json();
+
+		overallScore = data.overallScore ?? null;
+		sleepScore = data.sleepScore ?? 0;
+		cardioScore = data.cardioScore ?? 0;
+
+		/* ---------- Movement coral ---------- */
+		const movementRes = await fetch('/api/movement-coral', { credentials: 'include' });
+		const movementGrowth = (await movementRes.json())?.growth ?? 0;
+		movementState = Math.min(
+			MOVEMENT_STATES - 1,
+			Math.floor(movementGrowth * MOVEMENT_STATES)
+		);
+
+		/* ---------- Sleep coral ---------- */
+		const sleepRes = await fetch('/api/sleep-coral', { credentials: 'include' });
+		const sleepGrowth = (await sleepRes.json())?.growth ?? 0;
+		sleepState = Math.min(
+			SLEEP_STATES - 1,
+			Math.floor(sleepGrowth * SLEEP_STATES)
+		);
+
+		/* ---------- Workout plumes ---------- */
+		const workoutRes = await fetch('/api/workout-coral', { credentials: 'include' });
+		workoutPlumes = (await workoutRes.json())?.plumes ?? workoutPlumes;
+	});
 </script>
 
-<h1>Polar Dashboard</h1>
+<div class="dashboard-page">
+	<canvas class="water-canvas" bind:this={canvas}></canvas>
 
-<div class="grid-stack">
-  <!-- Profile Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <ProfileWidget />
-    </div>
-  </div>
+	<!-- Top navigation -->
+	<div class="top-nav">
+		<button class="bubble-button" aria-label="History">
+			<img src="/icons/clock.png" alt="" class="icon static" />
+			<img src="/icons/clock.gif" alt="" class="icon animated" />
+		</button>
 
-  <!-- Latest Exercise Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <LatestExerciseWidget />
-    </div>
-  </div>
+		<button class="bubble-button" aria-label="Settings">
+			<img src="/icons/settings.png" alt="" class="icon static" />
+			<img src="/icons/settings.gif" alt="" class="icon animated" />
+		</button>
+	</div>
 
-  <!-- Daily Activity Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <DailyActivityWidget />
-    </div>
-  </div>
+	<!-- Overall score -->
+	<div class="overall-score-container">
+		<div class="overall-score-label">Daily score</div>
 
-  <!-- Sleep Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <SleepWidget />
-    </div>
-  </div>
+		<div class="overall-score-bubble">
+			<svg viewBox="0 0 80 80">
+				<!-- Tracks -->
+				<circle cx="40" cy="40" r="24" stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none" />
+				<circle cx="40" cy="40" r="18" stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none" />
 
-  <!-- Nightly Recharge Widget -->
-  <div class="grid-stack-item" gs-w="1" gs-h="2">
-    <div class="grid-stack-item-content">
-      <NightlyRechargeWidget />
-    </div>
-  </div>
+				<!-- Cardio -->
+				<circle
+					cx="40"
+					cy="40"
+					r="24"
+					stroke="var(--ring-cardio)"
+					stroke-width="3"
+					fill="none"
+					stroke-linecap="round"
+					stroke-dasharray={circumference(24)}
+					stroke-dashoffset={dashOffset(cardioScore, 24)}
+					transform="rotate(-90 40 40)"
+				/>
+
+				<!-- Sleep -->
+				<circle
+					cx="40"
+					cy="40"
+					r="18"
+					stroke="var(--ring-sleep)"
+					stroke-width="3"
+					fill="none"
+					stroke-linecap="round"
+					stroke-dasharray={circumference(18)}
+					stroke-dashoffset={dashOffset(sleepScore, 18)}
+					transform="rotate(-90 40 40)"
+				/>
+			</svg>
+
+			<div class="score-text">{overallScore ?? '–'}%</div>
+		</div>
+	</div>
+
+	<!-- Background layers -->
+	<img src="/background/rock.png" alt="" class="rock-layer" />
+
+	<div class="movement-anchor">
+		<div class="movement-coral">
+			<img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral-image" />
+		</div>
+	</div>
+
+	<div class="sleep-anchor">
+		<div class="sleep-coral">
+			<img src={`/coralSleep/sleep-${sleepState}.png`} alt="" class="sleep-coral-image" />
+		</div>
+	</div>
+
+	<div class="sport-anchor">
+		<div class="sport-coral">
+			<img src="/background/sportCoral.png" alt="" class="sport-coral-image" />
+
+			{#each workoutPlumes as plume, i}
+				{#if plume.visible}
+					<img
+						src={`/coralWorkout/plume-${i}.png`}
+						alt="Workout plume"
+						class={`workout-plume plume-${i}`}
+					/>
+				{/if}
+			{/each}
+		</div>
+	</div>
 </div>
