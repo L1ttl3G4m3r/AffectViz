@@ -1,3 +1,8 @@
+:root {
+	--ring-sleep: rgba(180, 160, 255, 0.95); /* lavender */
+	--ring-cardio: rgba(255, 170, 120, 0.95); /* peach */
+}
+
 /* ===== Page background ===== */
 html,
 body {
@@ -280,7 +285,7 @@ body {
 	color: white;
 	font-family: inherit;
 
-	z-index: 2;
+	z-index: 3;
 }
 
 .sleep-anchor,
