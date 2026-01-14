@@ -67,8 +67,8 @@
 			<div class="divider"></div>
 
 			<div>
-				<strong>Time</strong>
-				<span>{data?.duration ?? '–'}</span>
+				<strong>Steps</strong>
+				<span>{data?.totalSteps ?? 0}</span>
 			</div>
 		</div>
 

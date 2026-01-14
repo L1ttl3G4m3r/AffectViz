@@ -60,15 +60,15 @@
 
 		<div class="workout-stats">
 			<div>
-				<strong>Cal. burned</strong>
-				<span>{data?.calories ?? 0}</span>
+				<strong>Cal burned</strong>
+				<span>{data?.workoutCalories ?? 0}</span>
 			</div>
 
 			<div class="divider"></div>
 
 			<div>
 				<strong>Time</strong>
-				<span>{data?.duration ?? '–'}</span>
+				<span>{data?.workoutDurationMinutes ?? '0'} min</span>
 			</div>
 		</div>
 

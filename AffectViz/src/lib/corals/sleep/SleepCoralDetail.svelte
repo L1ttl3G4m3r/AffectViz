@@ -61,14 +61,14 @@
 		<div class="sleep-stats">
 			<div>
 				<strong>Sleep</strong>
-				<span>{data?.duration ?? 0}</span>
+				<span>{data?.sleepDuration ?? '-'}</span>
 			</div>
 
 			<div class="divider"></div>
 
 			<div>
 				<strong>Quality</strong>
-				<span>{data?.quality ?? '–'}</span>
+				<span>{data?.sleepScore ?? '–'}</span>
 			</div>
 		</div>
 
