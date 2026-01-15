@@ -7,6 +7,10 @@
 	import MovementCoralDetail from '$lib/corals/movement/MovementCoralDetail.svelte';
 	import SleepCoralDetail from '$lib/corals/sleep/SleepCoralDetail.svelte';
 	import WorkoutCoralDetail from '$lib/corals/workout/WorkoutCoralDetail.svelte';
+	import FishSchool from '$lib/components/FishSchoolSteps.svelte';
+	import FishSchoolWorkout from '$lib/components/FishSchoolWorkout.svelte';
+	import FishSleep from '$lib/components/FishSleep.svelte';
+	import Turtle from '$lib/components/Turtle.svelte';
 
 	let activeCoral = null;
 	let movementData = null;
@@ -162,6 +166,18 @@
 			<img src="/icons/settings.gif" alt="" class="icon animated" />
 		</button>
 	</div>
+
+	<FishSchool totalSteps={movementData?.totalSteps ?? 0} />
+
+	<FishSchoolWorkout workoutData={workoutData} />
+
+	<FishSleep sleepData={sleepData} />
+
+	<Turtle
+		movementData={movementData}
+		workoutData={workoutData}
+		sleepData={sleepData}
+	/>
 
 	<!-- Overall score -->
 	<div class="overall-score-container">
