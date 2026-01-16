@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	export let totalSteps = 0;
+	export let onOpen = () => {};
 
 	/* STEP → FISH COUNT */
 	$: fishCount =
@@ -39,31 +40,34 @@
 </script>
 
 {#if fishCount > 0}
-	<div
-		class="fish-school"
-		style="
-			transform:
-				translateX({x}px)
-				scaleX({direction});
-		"
+	<button
+		type="button"
+		class="fish-click"
+		aria-label="Open sea life details"
+		on:click={onOpen}
 	>
-		{#each Array(fishCount) as _, i}
-			<img
-				src="/fish/fish-steps.png"
-				alt=""
-				class="fish"
-				style="
-					--offset-x: {i * 24}px;
-					--offset-y: {
-                        i === 1 ? -10 :
-                        i === 2 ? 8 :
-                        0
-                    }px;
-					--delay: {i * 0.15}s;
-				"
-			/>
-		{/each}
-	</div>
+		<div
+			class="fish-school"
+			style="transform: translateX({x}px) scaleX({direction});"
+		>
+			{#each Array(fishCount) as _, i}
+				<img
+					src="/fish/fish-steps.png"
+					alt=""
+					class="fish"
+					style="
+						--offset-x: {i * 24}px;
+						--offset-y: {
+							i === 1 ? -10 :
+							i === 2 ? 8 :
+							0
+						}px;
+						--delay: {i * 0.15}s;
+					"
+				/>
+			{/each}
+		</div>
+	</button>
 {/if}
 
 <style>

@@ -11,11 +11,13 @@
 	import FishSchoolWorkout from '$lib/components/FishSchoolWorkout.svelte';
 	import FishSleep from '$lib/components/FishSleep.svelte';
 	import Turtle from '$lib/components/Turtle.svelte';
+	import SeaLifeOverlay from '$lib/components/SeaLifeOverlay.svelte';
 
 	let activeCoral = null;
 	let movementData = null;
 	let sleepData = null;
 	let workoutData = null;
+	let activeInfoOverlay = null;
 
 	/* ================= Water animation ================= */
 
@@ -167,16 +169,26 @@
 		</button>
 	</div>
 
-	<FishSchool totalSteps={movementData?.totalSteps ?? 0} />
+	<FishSleep
+		sleepData={sleepData}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
 
-	<FishSchoolWorkout workoutData={workoutData} />
+	<FishSchool
+		totalSteps={movementData?.totalSteps ?? 0}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
 
-	<FishSleep sleepData={sleepData} />
+	<FishSchoolWorkout
+		workoutData={workoutData}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
 
 	<Turtle
 		movementData={movementData}
 		workoutData={workoutData}
 		sleepData={sleepData}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
 	/>
 
 	<!-- Overall score -->
@@ -304,3 +316,12 @@
 	</CoralOverlay>
 {/if}
 
+{#if activeInfoOverlay === 'seaLife'}
+	<CoralOverlay open on:close={() => (activeInfoOverlay = null)}>
+		<SeaLifeOverlay
+			movementData={movementData}
+			workoutData={workoutData}
+			sleepData={sleepData}
+		/>
+	</CoralOverlay>
+{/if}

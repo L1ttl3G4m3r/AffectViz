@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	export let sleepData = null;
+    export let onOpen = () => {};
 
 	/* ---------------------------------------
 	   CHECK IF LAST NIGHT ≥ 7 HOURS
@@ -49,17 +50,24 @@
 </script>
 
 {#if showFish}
-	<div
-		class="fish-sleep"
-		style="transform: translateX({x}px) scaleX({direction});"
+    <button
+		type="button"
+		class="fish-click"
+		aria-label="Open sea life details"
+		on:click={onOpen}
 	>
-		<img
-			src="/fish/fish-sleep.png"
-			alt=""
-			class="fish"
-			style="--offset-y: {Math.sin(t) * 2}px;"
-		/>
-	</div>
+        <div
+            class="fish-sleep"
+            style="transform: translateX({x}px) scaleX({direction});"
+        >
+            <img
+                src="/fish/fish-sleep.png"
+                alt=""
+                class="fish"
+                style="--offset-y: {Math.sin(t) * 2}px;"
+            />
+        </div>
+    </button>
 {/if}
 
 <style>

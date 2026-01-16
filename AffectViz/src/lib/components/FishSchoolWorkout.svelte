@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	export let workoutData = null;
+    export let onOpen = () => {};
 
 	/* ---------------------------------------
 	   COUNT WORKOUTS THIS WEEK
@@ -49,25 +50,32 @@
 </script>
 
 {#if fishCount > 0}
-	<div
-		class="fish-school workout"
-		style="transform: translateX({x}px) scaleX({direction});"
-	>
-		{#each Array(fishCount) as _, i}
-			<img
-				src="/fish/fish-workout.png"
-				alt=""
-				class="fish"
-				style="
-					--offset-x: {i * 26}px;
-					--offset-y: {
-						(i === 1 ? -8 : 0)
-						+ Math.sin(t + i) * 1.5
-					}px;
-				"
-			/>
-		{/each}
-	</div>
+    <button
+        type="button"
+        class="fish-click"
+        aria-label="Open sea life details"
+        on:click={onOpen}
+    >
+        <div
+            class="fish-school workout"
+            style="transform: translateX({x}px) scaleX({direction});"
+        >
+            {#each Array(fishCount) as _, i}
+                <img
+                    src="/fish/fish-workout.png"
+                    alt=""
+                    class="fish"
+                    style="
+                        --offset-x: {i * 26}px;
+                        --offset-y: {
+                            (i === 1 ? -8 : 0)
+                            + Math.sin(t + i) * 1.5
+                        }px;
+                    "
+                />
+            {/each}
+        </div>
+    </button>
 {/if}
 
 <style>

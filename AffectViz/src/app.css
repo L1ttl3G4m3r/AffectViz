@@ -559,3 +559,11 @@ body {
 	font-size: 3rem;
 	pointer-events: auto;
 }
+
+.fish-click {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	pointer-events: auto;
+	cursor: pointer;
+}

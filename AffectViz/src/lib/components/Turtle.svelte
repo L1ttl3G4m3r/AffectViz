@@ -5,6 +5,8 @@
 	export let workoutData = null;
 	export let sleepData = null;
 
+    export let onOpen = () => {};
+
 	/* ---------------------------------------
 	   CONDITIONS
 	--------------------------------------- */
@@ -71,17 +73,24 @@
 </script>
 
 {#if visible}
-	<div
-		class="turtle"
-		style="transform: translateX({x}px) scaleX({direction});"
-	>
-		<img
-			src="/fish/turtle.png"
-			alt=""
-			class="turtle-img"
-			style="--float: {Math.sin(t) * 4}px;"
-		/>
-	</div>
+    <button
+        type="button"
+        class="fish-click"
+        aria-label="Open sea life details"
+        on:click={onOpen}
+    >
+        <div
+            class="turtle"
+            style="transform: translateX({x}px) scaleX({direction});"
+        >
+            <img
+                src="/fish/turtle.png"
+                alt=""
+                class="turtle-img"
+                style="--float: {Math.sin(t) * 4}px;"
+            />
+        </div>
+    </button>
 {/if}
 
 <style>
