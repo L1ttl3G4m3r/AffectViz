@@ -399,9 +399,16 @@ body {
 }
 
 .movement-chart,
-.sleep-chart,
-.workout-chart {
-	margin: 1rem auto;
+.sleep-chart {
+	margin: 2rem auto 1rem;
+	width: min(90%, 360px);
+}
+
+.movement-chart-card {
+	background: rgba(255, 255, 255, 0.9);
+	border-radius: 18px;
+	padding: 1rem;
+	margin: 2rem auto 0;
 	width: min(90%, 360px);
 }
 
