@@ -60,6 +60,9 @@ export async function GET({ cookies }) {
 		let workoutCalories = 0;
 		let workoutDurationMinutes = 0;
 
+		let heartRateMinutesSum = 0;
+		let heartRateWeightedSum = 0;
+
 		for (const ex of exercises) {
 			if (!ex?.start_time || !ex?.duration) continue;
 
@@ -73,6 +76,13 @@ export async function GET({ cookies }) {
 			if (dateKey === todayKey) {
 				workoutDurationMinutes += minutes;
 				workoutCalories += ex.calories ?? 0;
+
+				const avgHr = ex?.heart_rate?.average;
+				
+				if (typeof avgHr === 'number' && avgHr > 0) {
+					heartRateMinutesSum += minutes;
+					heartRateWeightedSum += avgHr * minutes;
+				}
 			}
 		}
 
@@ -95,6 +105,11 @@ export async function GET({ cookies }) {
 			});
 		}
 
+		const avgHeartRate =
+		heartRateMinutesSum > 0
+			? Math.round(heartRateWeightedSum / heartRateMinutesSum)
+			: null;
+
 		return json({
 			weekStart: toNLDate(monday),
 			dailyGoalMinutes: DAILY_GOAL_MINUTES,
@@ -102,7 +117,9 @@ export async function GET({ cookies }) {
 
 			/* 🔹 NEW OUTPUT */
 			workoutCalories: Math.round(workoutCalories),
-			workoutDurationMinutes: Math.round(workoutDurationMinutes)
+			workoutDurationMinutes: Math.round(workoutDurationMinutes),
+
+			avgHeartRate
 		});
 	} catch (err) {
 		console.error('[workout-coral] Failed:', err);
