@@ -46,6 +46,12 @@ export async function GET({ cookies }) {
 		/* 🔹 ADD: previous night details */
 		const lastNight = list[0];
 
+		const deepSleep = Math.round((lastNight?.deep_sleep ?? 0) / 60);
+		const remSleep = Math.round((lastNight?.rem_sleep ?? 0) / 60);
+		const lightSleep = Math.round((lastNight?.light_sleep ?? 0) / 60);
+
+		const awake = Math.round((lastNight?.total_interruption_duration ?? 0) / 60);
+
 		const sleepScore = lastNight?.sleep_score ?? 0;
 		const sleepDuration = formatSleepDuration(
 			lastNight?.sleep_start_time,
@@ -57,7 +63,12 @@ export async function GET({ cookies }) {
 			growth,
 			sleepState,
 			sleepScore,
-			sleepDuration
+			sleepDuration,
+
+			deepSleep,
+			remSleep,
+			lightSleep,
+			awake
 		});
 	} catch (err) {
 		console.error('[sleep-coral]', err);
