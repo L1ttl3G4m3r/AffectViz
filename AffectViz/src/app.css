@@ -600,3 +600,124 @@ body {
 	pointer-events: auto;
 	cursor: pointer;
 }
+
+/* ============================= */
+/* Settings Page */
+/* ============================= */
+
+.settings-page {
+	width: 100%;
+	max-width: 100vw;
+	overflow-x: hidden;
+	box-sizing: border-box;
+	min-height: 100svh;
+	padding: 1rem;
+	position: relative;
+	color: white;
+}
+
+.settings-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	padding-top: env(safe-area-inset-top, 0);
+	margin-top: 0.25rem;
+}
+
+.settings-back-button {
+	position: absolute;
+	left: 0.25rem;
+	top: 0;
+
+	background: none;
+	border: none;
+	color: white;
+	font-size: 2rem;
+	cursor: pointer;
+}
+
+.settings-title {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+	text-align: center;
+
+	max-width: 75vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.settings-status {
+	text-align: center;
+	margin-top: 3rem;
+	font-weight: 400;
+}
+
+.settings-error {
+	color: #ffd1d1;
+}
+
+.settings-card {
+	max-width: 92vw;
+	box-sizing: border-box;
+	margin: 2rem auto 0;
+	width: min(92vw, 420px);
+
+	background: rgba(255, 255, 255, 0.75);
+	border-radius: 18px;
+	padding: 1.25rem;
+
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	color: #118fa8;
+}
+
+.settings-card-title {
+	margin: 0 0 1rem;
+	text-align: center;
+	font-weight: 700;
+	color: #118fa8;
+}
+
+.settings-row {
+	gap: 1rem;
+	display: flex;
+	justify-content: space-between;
+	padding: 0.9rem 0;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.settings-row:first-of-type {
+	border-top: none;
+}
+
+.settings-label,
+.settings-value {
+	max-width: 45%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.settings-label {
+	font-weight: 600;
+}
+
+.settings-value {
+	font-weight: 500;
+}
+
+.settings-logout {
+	position: absolute;
+	right: 2rem;
+	bottom: calc(env(safe-area-inset-bottom, 1rem) + 1.5rem);
+
+	background: none;
+	border: none;
+	color: white;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+}
