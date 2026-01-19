@@ -3,16 +3,11 @@ import { polarFetch } from '$lib/server/polar.js';
 
 /* -------------------------------------------------
    ISO-8601 Duration → Minutes
-   Examples:
-   - PT45M
-   - PT1H30M
-   - PT210.026S
 -------------------------------------------------- */
 function durationToMinutes(duration) {
 	if (!duration || typeof duration !== 'string') return 0;
 
 	const match = duration.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/);
-
 	if (!match) return 0;
 
 	const hours = Number(match[1] ?? 0);
@@ -41,7 +36,7 @@ function getMondayNL() {
 		})
 	);
 
-	const day = now.getDay(); // 0=Sun, 1=Mon
+	const day = now.getDay();
 	const diff = day === 0 ? -6 : 1 - day;
 
 	now.setDate(now.getDate() + diff);
@@ -55,13 +50,18 @@ function getMondayNL() {
 -------------------------------------------------- */
 export async function GET({ cookies }) {
 	try {
-		// Fetch all exercises for the authenticated Polar user
 		const response = await polarFetch('exercises', cookies);
-
 		const exercises = Array.isArray(response) ? response : (response?.exercises ?? []);
 
-		// Aggregate minutes per day
 		const minutesPerDay = {};
+
+		/* 🔹 ADD: today aggregates */
+		const todayKey = toNLDate(new Date());
+		let workoutCalories = 0;
+		let workoutDurationMinutes = 0;
+
+		let heartRateMinutesSum = 0;
+		let heartRateWeightedSum = 0;
 
 		for (const ex of exercises) {
 			if (!ex?.start_time || !ex?.duration) continue;
@@ -69,16 +69,28 @@ export async function GET({ cookies }) {
 			const dateKey = toNLDate(ex.start_time);
 			const minutes = durationToMinutes(ex.duration);
 
+			// existing logic
 			minutesPerDay[dateKey] = (minutesPerDay[dateKey] ?? 0) + minutes;
+
+			/* 🔹 ADD: today only */
+			if (dateKey === todayKey) {
+				workoutDurationMinutes += minutes;
+				workoutCalories += ex.calories ?? 0;
+
+				const avgHr = ex?.heart_rate?.average;
+				
+				if (typeof avgHr === 'number' && avgHr > 0) {
+					heartRateMinutesSum += minutes;
+					heartRateWeightedSum += avgHr * minutes;
+				}
+			}
 		}
 
 		const DAILY_GOAL_MINUTES = 60;
 		const monday = getMondayNL();
-		const todayKey = toNLDate(new Date());
 
 		const plumes = [];
 
-		// Build current week (Mon → Sun)
 		for (let i = 0; i < 7; i++) {
 			const d = new Date(monday);
 			d.setDate(monday.getDate() + i);
@@ -93,10 +105,21 @@ export async function GET({ cookies }) {
 			});
 		}
 
+		const avgHeartRate =
+		heartRateMinutesSum > 0
+			? Math.round(heartRateWeightedSum / heartRateMinutesSum)
+			: null;
+
 		return json({
 			weekStart: toNLDate(monday),
 			dailyGoalMinutes: DAILY_GOAL_MINUTES,
-			plumes
+			plumes,
+
+			/* 🔹 NEW OUTPUT */
+			workoutCalories: Math.round(workoutCalories),
+			workoutDurationMinutes: Math.round(workoutDurationMinutes),
+
+			avgHeartRate
 		});
 	} catch (err) {
 		console.error('[workout-coral] Failed:', err);

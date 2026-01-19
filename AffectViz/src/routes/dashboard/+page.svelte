@@ -1,6 +1,24 @@
 <script>
 	import { onMount } from 'svelte';
 
+	/* ================= Overlay ================= */
+
+	import CoralOverlay from '$lib/components/CoralOverlay.svelte';
+	import MovementCoralDetail from '$lib/corals/movement/MovementCoralDetail.svelte';
+	import SleepCoralDetail from '$lib/corals/sleep/SleepCoralDetail.svelte';
+	import WorkoutCoralDetail from '$lib/corals/workout/WorkoutCoralDetail.svelte';
+	import FishSchool from '$lib/components/FishSchoolSteps.svelte';
+	import FishSchoolWorkout from '$lib/components/FishSchoolWorkout.svelte';
+	import FishSleep from '$lib/components/FishSleep.svelte';
+	import Turtle from '$lib/components/Turtle.svelte';
+	import SeaLifeOverlay from '$lib/components/SeaLifeOverlay.svelte';
+
+	let activeCoral = null;
+	let movementData = null;
+	let sleepData = null;
+	let workoutData = null;
+	let activeInfoOverlay = null;
+
 	/* ================= Water animation ================= */
 
 	let canvas;
@@ -67,7 +85,7 @@
 	let sleepState = 0;
 	const SLEEP_STATES = 14;
 
-	let workoutPlumes = Array(7).fill({ visible: false });
+	let workoutPlumes = Array.from({ length: 7 }, () => ({ visible: false }));
 
 	/* ================= SVG math ================= */
 
@@ -83,9 +101,6 @@
 		};
 	}
 
-	$: cardioDot = polarToCartesian(40, 40, 24, cardioScore);
-	$: sleepDot = polarToCartesian(40, 40, 18, sleepScore);
-
 	/* ================= Mount ================= */
 
 	onMount(async () => {
@@ -96,31 +111,45 @@
 
 		/* ---------- Scores ---------- */
 		const res = await fetch('/api/overall-score', { credentials: 'include' });
-		const data = await res.json();
+		const scoreData = await res.json();
 
-		overallScore = data.overallScore ?? null;
-		sleepScore = data.sleepScore ?? 0;
-		cardioScore = data.cardioScore ?? 0;
+		overallScore = scoreData.overallScore ?? null;
+		sleepScore = scoreData.sleepScore ?? 0;
+		cardioScore = scoreData.cardioScore ?? 0;
 
 		/* ---------- Movement coral ---------- */
 		const movementRes = await fetch('/api/movement-coral', { credentials: 'include' });
-		const movementGrowth = (await movementRes.json())?.growth ?? 0;
+		movementData = await movementRes.json();
+
+		const movementGrowth = movementData?.growth ?? 0;
 		movementState = Math.min(
 			MOVEMENT_STATES - 1,
 			Math.floor(movementGrowth * MOVEMENT_STATES)
 		);
 
-		/* ---------- Sleep coral ---------- */
+		/* ---------- Sleep coral (❗ FIXED) ---------- */
 		const sleepRes = await fetch('/api/sleep-coral', { credentials: 'include' });
-		const sleepGrowth = (await sleepRes.json())?.growth ?? 0;
+		sleepData = await sleepRes.json();
+
+		const sleepGrowth = sleepData?.growth ?? 0;
 		sleepState = Math.min(
 			SLEEP_STATES - 1,
 			Math.floor(sleepGrowth * SLEEP_STATES)
 		);
 
-		/* ---------- Workout plumes ---------- */
+		/* ---------- Workout coral (❗ FIXED & SAFE) ---------- */
 		const workoutRes = await fetch('/api/workout-coral', { credentials: 'include' });
-		workoutPlumes = (await workoutRes.json())?.plumes ?? workoutPlumes;
+		const workoutJson = await workoutRes.json();
+
+		// data for overlay
+		workoutData = workoutJson;
+
+		// visual plumes (keep separate!)
+		workoutPlumes = (workoutJson?.plumes ?? []).map(v =>
+			typeof v === 'object'
+				? v
+				: { visible: Boolean(v) }
+		);
 	});
 </script>
 
@@ -140,17 +169,50 @@
 		</button>
 	</div>
 
+	<FishSleep
+		sleepData={sleepData}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
+
+	<FishSchool
+		totalSteps={movementData?.totalSteps ?? 0}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
+
+	<FishSchoolWorkout
+		workoutData={workoutData}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
+
+	<Turtle
+		movementData={movementData}
+		workoutData={workoutData}
+		sleepData={sleepData}
+		onOpen={() => (activeInfoOverlay = 'seaLife')}
+	/>
+
 	<!-- Overall score -->
 	<div class="overall-score-container">
 		<div class="overall-score-label">Daily score</div>
-
 		<div class="overall-score-bubble">
 			<svg viewBox="0 0 80 80">
-				<!-- Tracks -->
-				<circle cx="40" cy="40" r="24" stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none" />
-				<circle cx="40" cy="40" r="18" stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none" />
+				<circle
+					cx="40"
+					cy="40"
+					r="24"
+					stroke="rgba(255,255,255,0.15)"
+					stroke-width="3"
+					fill="none"
+				/>
+				<circle
+					cx="40"
+					cy="40"
+					r="18"
+					stroke="rgba(255,255,255,0.15)"
+					stroke-width="3"
+					fill="none"
+				/>
 
-				<!-- Cardio -->
 				<circle
 					cx="40"
 					cy="40"
@@ -164,7 +226,6 @@
 					transform="rotate(-90 40 40)"
 				/>
 
-				<!-- Sleep -->
 				<circle
 					cx="40"
 					cy="40"
@@ -183,34 +244,84 @@
 		</div>
 	</div>
 
-	<!-- Background layers -->
 	<img src="/background/rock.png" alt="" class="rock-layer" />
 
-	<div class="movement-anchor">
-		<div class="movement-coral">
-			<img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral-image" />
-		</div>
-	</div>
+	<!-- Movement coral -->
+	<button
+		type="button"
+		class="movement-coral"
+		aria-label="Open movement coral details"
+		on:click={() => activeCoral = 'movement'}
+	>
+		<img
+			src={`/coralMovement/movement-${movementState}.png`}
+			alt=""
+			class="movement-coral-image"
+		/>
+	</button>
 
-	<div class="sleep-anchor">
-		<div class="sleep-coral">
-			<img src={`/coralSleep/sleep-${sleepState}.png`} alt="" class="sleep-coral-image" />
-		</div>
-	</div>
+	<!-- Sleep coral (reuses movement overlay for now) -->
+	<button
+		type="button"
+		class="sleep-coral"
+		aria-label="Open sleep coral details"
+		on:click={() => activeCoral = 'sleep'}
+	>
+		<img
+			src={`/coralSleep/sleep-${sleepState}.png`}
+			alt=""
+			class="sleep-coral-image"
+		/>
+	</button>
 
-	<div class="sport-anchor">
-		<div class="sport-coral">
-			<img src="/background/sportCoral.png" alt="" class="sport-coral-image" />
+	<!-- Workout coral -->
+	<button
+		type="button"
+		class="sport-coral"
+		aria-label="Open sport coral details"
+		on:click={() => activeCoral = 'sport'}
+	>
+		<img
+			src="/background/sportCoral.png"
+			alt=""
+			class="sport-coral-image"
+		/>
 
-			{#each workoutPlumes as plume, i}
-				{#if plume.visible}
-					<img
-						src={`/coralWorkout/plume-${i}.png`}
-						alt="Workout plume"
-						class={`workout-plume plume-${i}`}
-					/>
-				{/if}
-			{/each}
-		</div>
-	</div>
+		{#each workoutPlumes as plume, i}
+			{#if plume.visible}
+				<img
+					src={`/coralWorkout/plume-${i}.png`}
+					alt=""
+					class={`workout-plume plume-${i}`}
+				/>
+			{/if}
+		{/each}
+	</button>
 </div>
+
+<!-- Movement overlay -->
+{#if activeCoral}
+	<CoralOverlay open on:close={() => activeCoral = null}>
+		{#if activeCoral === 'movement' && movementData}
+			<MovementCoralDetail data={movementData} />
+		{:else if activeCoral === 'sleep' && sleepData}
+			<SleepCoralDetail data={sleepData} />
+		{:else if activeCoral === 'sport' && workoutData}
+			<WorkoutCoralDetail data={workoutData} />
+		{:else}
+			<p style="color:white; padding:2rem">
+				Loading…
+			</p>
+		{/if}
+	</CoralOverlay>
+{/if}
+
+{#if activeInfoOverlay === 'seaLife'}
+	<CoralOverlay open on:close={() => (activeInfoOverlay = null)}>
+		<SeaLifeOverlay
+			movementData={movementData}
+			workoutData={workoutData}
+			sleepData={sleepData}
+		/>
+	</CoralOverlay>
+{/if}

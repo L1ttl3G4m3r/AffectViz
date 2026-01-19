@@ -66,19 +66,22 @@ body {
 	background: url('/background/dashboardBackground.png') center / cover no-repeat;
 }
 
+/* Restore scene positioning without z-index traps */
+.top-nav,
+.overall-score-container,
+.movement-anchor,
+.sleep-anchor,
+.sport-anchor {
+	position: absolute;
+}
+
 .water-canvas {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
-	z-index: 0;
-}
-
-/* Future UI above water */
-.dashboard-page > *:not(canvas):not(.overall-score-container) {
-	position: relative;
-	z-index: 1;
+	z-index: -1;
 }
 
 /* ============================= */
@@ -87,7 +90,7 @@ body {
 
 .rock-layer {
 	position: absolute;
-	bottom: -45vh; /* 👈 move it DOWN */
+	bottom: 15vh;
 	left: 50%;
 
 	transform: translateX(-50%);
@@ -115,7 +118,7 @@ body {
 	justify-content: space-between;
 	align-items: center;
 
-	z-index: 3; /* above water canvas */
+	z-index: 20; /* above water canvas */
 	pointer-events: none; /* let only buttons receive input */
 }
 
@@ -205,6 +208,7 @@ body {
 /* ============================= */
 
 .overall-score-container {
+	pointer-events: none;
 	position: absolute;
 
 	/* Visual center of the screen */
@@ -288,12 +292,17 @@ body {
 	z-index: 3;
 }
 
-.sleep-anchor,
-.sport-anchor,
-.movement-anchor {
+.movement-coral,
+.sleep-coral,
+.sport-coral {
+	all: unset;
 	position: absolute;
-	inset: 0; /* full scene */
-	pointer-events: none;
+	cursor: pointer;
+	pointer-events: auto;
+
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+	display: inline-block;
 }
 
 /* ============================= */
@@ -301,13 +310,19 @@ body {
 /* ============================= */
 
 .movement-coral {
+	display: block;
+	cursor: pointer;
+	pointer-events: auto;
+
 	position: absolute;
-	bottom: -15vh;
+	bottom: 45vh;
 	left: -2vw;
 
 	width: min(60vw, 420px);
-	z-index: 8;
-	isolation: isolate;
+	z-index: 10;
+
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
 }
 
 .movement-coral-image {
@@ -316,18 +331,129 @@ body {
 	display: block;
 }
 
+.movement-overlay,
+.sleep-overlay,
+.workout-overlay {
+	position: relative;
+	min-height: 100%;
+	color: white;
+	padding-bottom: 8rem;
+}
+
+.movement-info-scroll,
+.sleep-info-scroll,
+.workout-info-scroll {
+	position: fixed;
+	top: env(safe-area-inset-top, 5rem);
+
+	width: min(90vw, 360px);
+	max-height: calc(100vh - 12rem);
+
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+
+	padding: 1.5rem 1.5rem 4rem;
+
+	z-index: 4;
+}
+
+.movement-text,
+.sleep-text,
+.workout-text {
+	max-width: 320px;
+	margin: 4rem auto 2rem;
+	font-weight: 300;
+	line-height: 1.6;
+}
+
+.movement-stats,
+.sleep-stats,
+.workout-stats {
+	margin: 2rem auto;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.85);
+	color: #118fa8;
+	border-radius: 16px;
+	padding: 1rem 1.25rem;
+	width: min(90%, 360px);
+}
+
+.movement-stats .divider,
+.sleep-stats .divider,
+.workout-stats .divider {
+	width: 1px;
+	height: 32px;
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.graph-toggle {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 1rem;
+	font-weight: 600;
+	margin: 1rem auto;
+	display: block;
+}
+
+.movement-chart,
+.sleep-chart {
+	margin: 2rem auto 1rem;
+	width: min(90%, 360px);
+}
+
+.movement-chart-card {
+	background: rgba(255, 255, 255, 0.9);
+	border-radius: 18px;
+	padding: 1rem;
+	margin: 2rem auto 0;
+	width: min(90%, 360px);
+}
+
+.movement-overlay-coral,
+.sleep-overlay-coral,
+.workout-overlay-coral {
+	position: fixed;
+	bottom: -10vh;
+	left: -10vw;
+
+	width: min(60vw, 520px);
+
+	transform: rotate(35deg);
+	opacity: 0.9;
+
+	pointer-events: none;
+	z-index: 1;
+}
+
+.movement-overlay-title,
+.sleep-overlay-title,
+.workout-overlay-title {
+	position: fixed;
+	left: 1rem;
+	bottom: env(safe-area-inset-bottom, 1rem);
+
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: white;
+
+	z-index: 3;
+	pointer-events: none;
+}
+
 /* ============================= */
 /* Sleep Coral (ANCHOR) */
 /* ============================= */
 
 .sleep-coral {
 	position: absolute;
-	bottom: -32vh;
+	bottom: 27vh;
 	right: -12vw;
 
 	width: min(80vw, 420px);
 	z-index: 10;
-	isolation: isolate;
 }
 
 .sleep-coral-image {
@@ -342,7 +468,7 @@ body {
 
 .sport-coral {
 	position: absolute;
-	bottom: -48vh;
+	bottom: 13vh;
 	left: 20%;
 
 	width: min(45vw, 420px);
@@ -402,4 +528,75 @@ body {
 .plume-6 {
 	top: 28%;
 	left: 65%;
+}
+
+.workout-stats-3row {
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.workout-stats-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+}
+
+.workout-stats-bottom {
+	width: 100%;
+	text-align: center;
+}
+
+.workout-divider {
+	border: none;
+	height: 1px;
+	background: rgba(17, 143, 168, 0.35);
+	margin: 0.5rem 0 0.75rem;
+	width: 100%;
+}
+
+.coral-overlay-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.coral-overlay-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	pointer-events: auto;
+}
+
+.coral-overlay-panel {
+	pointer-events: auto;
+	position: absolute;
+	inset: 0;
+
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+.overlay-header {
+	position: sticky;
+	top: 0;
+	padding: 1rem;
+	z-index: 1001;
+}
+
+.back-button {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 3rem;
+	pointer-events: auto;
+}
+
+.fish-click {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	pointer-events: auto;
+	cursor: pointer;
 }
