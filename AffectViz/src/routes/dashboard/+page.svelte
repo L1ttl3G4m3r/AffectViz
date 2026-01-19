@@ -148,7 +148,7 @@
 
 	<!-- Top navigation -->
 	<div class="top-nav">
-		<button class="bubble-button" aria-label="History">
+		<button class="bubble-button" aria-label="History" on:click={() => goto('/history')}>
 			<img src="/icons/clock.png" alt="" class="icon static" />
 			<img src="/icons/clock.gif" alt="" class="icon animated" />
 		</button>
