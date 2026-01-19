@@ -18,7 +18,7 @@ body {
 }
 
 .login-container {
-	min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+	min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -108,7 +108,7 @@ body {
 
 .top-nav {
 	position: fixed;
-	top: env(safe-area-inset-top, 0);
+	top: calc(env(safe-area-inset-top, 0));
 	left: 0;
 	right: 0;
 
@@ -153,8 +153,8 @@ body {
 		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
 		0 10px 20px rgba(0, 0, 0, 0.25);
 
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 
 	transition:
 		transform 0.2s ease,
@@ -261,8 +261,8 @@ body {
 		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
 		0 10px 20px rgba(0, 0, 0, 0.25);
 
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 /* SVG ring fills the bubble */
@@ -344,7 +344,7 @@ body {
 .sleep-info-scroll,
 .workout-info-scroll {
 	position: fixed;
-	top: env(safe-area-inset-top, 5rem);
+	top: calc(env(safe-area-inset-top, 5rem));
 
 	width: min(90vw, 360px);
 	max-height: calc(100vh - 12rem);
@@ -433,7 +433,7 @@ body {
 .workout-overlay-title {
 	position: fixed;
 	left: 1rem;
-	bottom: env(safe-area-inset-bottom, 1rem);
+	bottom: calc(env(safe-area-inset-bottom, 1rem));
 
 	font-size: 2.5rem;
 	font-weight: 600;
@@ -621,7 +621,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	position: relative;
-	padding-top: env(safe-area-inset-top, 0);
+	padding-top: calc(env(safe-area-inset-top, 0));
 	margin-top: 0.25rem;
 }
 
@@ -710,7 +710,7 @@ body {
 }
 
 .settings-logout {
-	position: absolute;
+	position: fixed;
 	right: 2rem;
 	bottom: calc(env(safe-area-inset-bottom, 1rem) + 1.5rem);
 
@@ -720,4 +720,416 @@ body {
 	font-size: 1rem;
 	font-weight: 600;
 	cursor: pointer;
+}
+
+/* ============================= */
+/* History Page */
+/* ============================= */
+
+.history-page {
+	min-height: 100svh;
+	position: relative;
+	padding: 1rem;
+	padding-bottom: 3rem;
+	box-sizing: border-box;
+	color: white;
+
+	/* uses your global body background already */
+	overflow-x: hidden;
+	background: url('/background/dashboardBackground.png') center / cover no-repeat;
+}
+
+.history-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	padding-top: calc(env(safe-area-inset-top, 0));
+}
+
+.history-back {
+	position: absolute;
+	left: 0.25rem;
+	top: 0;
+
+	background: none;
+	border: none;
+	color: white;
+	font-size: 2.5rem;
+	cursor: pointer;
+}
+
+.history-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.history-subtitle {
+	margin-top: 0.75rem;
+	text-align: center;
+	font-size: 0.8rem;
+	font-weight: 300;
+	opacity: 0.95;
+	line-height: 1.4;
+}
+
+/* Main layout */
+.history-main {
+	margin-top: 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+/* Rock area */
+.history-rock-area {
+	position: relative;
+	width: min(60vw, 240px);
+	height: 75vh;
+	margin-left: -1rem;
+	transform: translateY(6vh);
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+}
+
+.history-rock {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* Corals on rock (placeholder positions) */
+.history-coral {
+	position: absolute;
+	width: auto;
+	height: 55px;
+	pointer-events: none;
+}
+
+.coral-top {
+	top: 12%;
+	left: 12%;
+}
+
+.coral-mid {
+	top: 40%;
+	left: 8%;
+}
+
+.coral-bottom {
+	top: 68%;
+	left: 18%;
+}
+
+/* Week buttons */
+.history-weeks {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between; /* ✅ evenly spaced */
+	height: 75vh; /* ✅ matches rock height */
+	padding-top: 3rem;
+	padding-bottom: 3rem;
+	padding-right: 0.75rem;
+}
+
+.history-week-coral {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 0.5rem;
+}
+
+.week-1 {
+	top: 9%;
+}
+.week-2 {
+	top: 32%;
+}
+.week-3 {
+	top: 55%;
+}
+.week-4 {
+	top: 77%;
+}
+
+/* -------------------- */
+/* WEEK 1 CUSTOM SIZES  */
+/* -------------------- */
+
+.week1-sleep {
+	height: 150px;
+	transform: translateX(10vw) translateY(-12vh);
+	z-index: 3;
+}
+
+.week1-movement {
+	height: 150px;
+	transform: translateX(5vw) translateY(-13vh);
+	z-index: 2;
+}
+
+.week1-workout {
+	height: 80px;
+	transform: translateX(2vw) translateY(-9vh);
+	z-index: 4;
+}
+
+.week1-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(2vw) translateY(-8vh);
+	z-index: 5;
+}
+
+/* -------------------- */
+/* WEEK 2 CUSTOM SIZES  */
+/* -------------------- */
+
+.week2-sleep {
+	height: 150px;
+	transform: translateX(35vw) translateY(-5vh);
+	z-index: 3;
+}
+
+.week2-movement {
+	height: 150px;
+	transform: translateX(25vw) translateY(-6vh);
+	z-index: 2;
+}
+
+.week2-workout {
+	height: 80px;
+	transform: translateX(20vw) translateY(-3vh);
+	z-index: 4;
+}
+
+.week2-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(23vw) translateY(-4vh);
+	z-index: 5;
+}
+
+/* -------------------- */
+/* WEEK 3 CUSTOM SIZES  */
+/* -------------------- */
+
+.week3-sleep {
+	height: 150px;
+	transform: translateX(25vw) translateY(5vh);
+	z-index: 3;
+}
+
+.week3-movement {
+	height: 150px;
+	transform: translateX(20vw) translateY(4vh);
+	z-index: 2;
+}
+
+.week3-workout {
+	height: 80px;
+	transform: translateX(15vw) translateY(8vh);
+	z-index: 4;
+}
+
+.week3-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(15vw) translateY(9vh);
+	z-index: 5;
+}
+
+/* -------------------- */
+/* WEEK 4 CUSTOM SIZES  */
+/* -------------------- */
+
+.week4-sleep {
+	height: 150px;
+	transform: translateX(30vw) translateY(29vh);
+	z-index: 3;
+}
+
+.week4-movement {
+	height: 150px;
+	transform: translateX(25vw) translateY(29vh);
+	z-index: 2;
+}
+
+.week4-workout {
+	height: 80px;
+	transform: translateX(12vw) translateY(28vh);
+	z-index: 4;
+}
+
+.week4-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(12vw) translateY(28vh);
+	z-index: 5;
+}
+
+.history-workout-wrapper {
+	position: relative;
+	display: inline-block;
+}
+
+.history-week-button {
+	background: rgba(255, 255, 255, 0.3);
+	border: none;
+	color: white;
+	padding: 0.5rem 1rem;
+	border-radius: 14px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	cursor: pointer;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.history-week-button.active-week {
+	background: rgba(255, 255, 255, 0.5);
+	font-weight: 600;
+}
+
+/* Bottom dropdown bar */
+.history-dropdown {
+	position: relative;
+	left: auto;
+	transform: none;
+
+	margin: 10rem auto 1rem;
+
+	width: min(92vw, 360px);
+	padding: 0.75rem 1rem;
+
+	border: none;
+	border-radius: 16px;
+
+	background: rgba(255, 255, 255, 0.85);
+	color: #118fa8;
+
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-align: center;
+	cursor: pointer;
+}
+
+.history-dropdown-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.7rem;
+	font-weight: 400;
+	opacity: 0.8;
+}
+
+/* ============================= */
+/* Monthly Reef Overlay (History Dropdown) */
+/* ============================= */
+
+.monthly-overlay-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.monthly-overlay-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+.monthly-overlay-panel {
+	position: absolute;
+	inset: 0;
+
+	/* ✅ slight blur only, no tint, no shadow */
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+
+	padding: 1rem;
+	color: white;
+	box-sizing: border-box;
+}
+
+.monthly-overlay-back {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 2.5rem;
+	cursor: pointer;
+}
+
+.monthly-overlay-title {
+	position: absolute;
+	top: calc(env(safe-area-inset-top, 0) + 1rem);
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.monthly-overlay-intro {
+	margin-top: 5rem;
+	text-align: center;
+	font-weight: 300;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	opacity: 0.95;
+}
+
+.monthly-overlay-content {
+	margin-top: 2.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+	align-items: center;
+}
+
+.monthly-overlay-row {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	width: min(92vw, 360px);
+}
+
+.monthly-overlay-coral {
+	width: 95px;
+	height: auto;
+	transform: rotate(35deg) scale(1.5) translateX(-10vw);
+	flex-shrink: 0;
+}
+
+.monthly-overlay-text h2 {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.monthly-overlay-text p {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 300;
+	line-height: 1.4;
+	opacity: 0.9;
+}
+
+.monthly-overlay-footer {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: calc(env(safe-area-inset-bottom, 0) + 1.5rem);
+	text-align: center;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.4;
+	width: min(92vw, 360px);
 }
