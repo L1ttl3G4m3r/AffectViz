@@ -1,9 +1,11 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import MonthlyReefOverlay from '$lib/components/MonthlyReefOverlay.svelte';
 
 	const monthName = new Date().toLocaleString('en-US', { month: 'long' });
 
+	let showMonthlyOverlay = false;
 	let selectedWeek = 1;
 	let loading = true;
 	let error = '';
@@ -227,9 +229,15 @@
 		</div>
 
 		<!-- Bottom dropdown -->
-		<button class="history-dropdown">
-			View your monthly reef ✓
+		<button class="history-dropdown" on:click={() => (showMonthlyOverlay = true)}>
+			View your monthly reef
 			<span class="history-dropdown-sub">A recap of your habits and progress</span>
 		</button>
 	{/if}
 </div>
+
+<MonthlyReefOverlay
+	open={showMonthlyOverlay}
+	{monthName}
+	onClose={() => (showMonthlyOverlay = false)}
+/>

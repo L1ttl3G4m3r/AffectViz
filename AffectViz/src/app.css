@@ -153,8 +153,8 @@ body {
 		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
 		0 10px 20px rgba(0, 0, 0, 0.25);
 
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 
 	transition:
 		transform 0.2s ease,
@@ -261,8 +261,8 @@ body {
 		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
 		0 10px 20px rgba(0, 0, 0, 0.25);
 
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 /* SVG ring fills the bubble */
@@ -1017,7 +1017,7 @@ body {
 
 	font-size: 0.9rem;
 	font-weight: 600;
-	text-align: left;
+	text-align: center;
 	cursor: pointer;
 }
 
@@ -1027,4 +1027,109 @@ body {
 	font-size: 0.7rem;
 	font-weight: 400;
 	opacity: 0.8;
+}
+
+/* ============================= */
+/* Monthly Reef Overlay (History Dropdown) */
+/* ============================= */
+
+.monthly-overlay-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.monthly-overlay-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+.monthly-overlay-panel {
+	position: absolute;
+	inset: 0;
+
+	/* ✅ slight blur only, no tint, no shadow */
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+
+	padding: 1rem;
+	color: white;
+	box-sizing: border-box;
+}
+
+.monthly-overlay-back {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 2.5rem;
+	cursor: pointer;
+}
+
+.monthly-overlay-title {
+	position: absolute;
+	top: calc(env(safe-area-inset-top, 0) + 1rem);
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.monthly-overlay-intro {
+	margin-top: 5rem;
+	text-align: center;
+	font-weight: 300;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	opacity: 0.95;
+}
+
+.monthly-overlay-content {
+	margin-top: 2.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+	align-items: center;
+}
+
+.monthly-overlay-row {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	width: min(92vw, 360px);
+}
+
+.monthly-overlay-coral {
+	width: 95px;
+	height: auto;
+	transform: rotate(35deg) scale(1.5) translateX(-10vw);
+	flex-shrink: 0;
+}
+
+.monthly-overlay-text h2 {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.monthly-overlay-text p {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 300;
+	line-height: 1.4;
+	opacity: 0.9;
+}
+
+.monthly-overlay-footer {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: calc(env(safe-area-inset-bottom, 0) + 1.5rem);
+	text-align: center;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.4;
+	width: min(92vw, 360px);
 }
