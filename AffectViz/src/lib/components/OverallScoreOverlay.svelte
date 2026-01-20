@@ -1,5 +1,4 @@
 <script>
-	export let overallScore = null;
 	export let sleepScore = 0;
 	export let cardioScore = 0;
 	export let onClose = () => {};
@@ -13,7 +12,7 @@
 
 	<div class="overall-detail-panel">
 		<div class="overall-detail-header">
-			<button class="overall-detail-back" aria-label="Go back" on:click={onClose}>‹</button>
+			<button class="overall-detail-back" aria-label="Go back" on:click={onClose}> ← </button>
 		</div>
 
 		<h1 class="overall-detail-title">Overall Score</h1>

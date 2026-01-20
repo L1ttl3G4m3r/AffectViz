@@ -1,22 +1,73 @@
+/* ============================================================
+   ROOT VARIABLES (Design Tokens)
+   ============================================================ */
 :root {
+	/* Ring colors */
 	--ring-sleep: rgba(180, 160, 255, 0.95); /* lavender */
 	--ring-cardio: rgba(255, 170, 120, 0.95); /* peach */
+
+	/* Global colors */
+	--color-white: #ffffff;
+	--color-text-dark: #1f2937;
+	--color-accent-blue: #273de3;
+	--color-accent-teal: #118fa8;
+
+	/* Glass / blur overlay */
+	--glass-blur: blur(20px);
+	--glass-shadow-5: 0 0 30px rgba(0, 0, 0, 0.3);
+	--glass-bg-light: rgba(255, 255, 255, 0.85);
+	--glass-bg-medium: rgba(255, 255, 255, 0.75);
+	--glass-bg-soft: rgba(255, 255, 255, 0.3);
+	--glass-bg-soft-active: rgba(255, 255, 255, 0.5);
+
+	/* Shadows */
+	--shadow-soft: 0 4px 4px rgba(0, 0, 0, 0.25);
+	--shadow-bubble: 0 10px 20px rgba(0, 0, 0, 0.25);
+	--shadow-bubble-hover: 0 14px 28px rgba(0, 0, 0, 0.35);
+
+	/* Bubble inner shadows */
+	--bubble-inset-shadow:
+		inset -6px -8px 12px rgba(255, 255, 255, 0.35), inset 4px 6px 10px rgba(0, 0, 0, 0.08);
+
+	--bubble-inset-shadow-hover:
+		inset -4px -6px 10px rgba(255, 255, 255, 0.4), inset 2px 4px 8px rgba(0, 0, 0, 0.12);
+
+	/* Bubble gradient */
+	--bubble-gradient: radial-gradient(
+		circle at 30% 30%,
+		rgba(255, 255, 255, 0.6),
+		rgba(180, 230, 255, 0.35) 40%,
+		rgba(120, 200, 240, 0.25) 70%
+	);
+
+	/* Border radius */
+	--radius-pill: 50px;
+	--radius-card: 18px;
+	--radius-small: 16px;
+
+	/* Layout */
+	--content-width: min(90vw, 360px);
 }
 
-/* ===== Page background ===== */
+/* ============================================================
+   GLOBAL PAGE BASE
+   ============================================================ */
 html,
 body {
 	height: 100%;
 	margin: 0;
+	font-family: 'Poppins', sans-serif;
+	color: var(--color-text-dark);
 
+	/* Default background (Login uses this) */
 	background: url('/background/backgroundLogin.png') no-repeat center center fixed;
 	background-size: cover;
-	background-color: transparent; /* ensure nothing behind shows white */
-
-	color: #1f2937;
-	font-family: 'Poppins', sans-serif;
+	background-color: transparent;
 }
 
+/* ============================================================
+   LOGIN PAGE
+   ============================================================ */
 .login-container {
 	min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 	display: flex;
@@ -24,29 +75,35 @@ body {
 	justify-content: center;
 	align-items: center;
 	gap: 1rem;
+
 	padding: 0 1rem;
 	box-sizing: border-box;
 	text-align: center;
 }
 
 .login-container h1 {
-	color: white;
+	color: var(--color-white);
 	font-size: 1.5rem;
 	font-weight: 200;
 	font-style: italic;
 	margin-bottom: 0;
 }
 
+/* Login button */
 .login-container button {
 	padding: 0.75rem 3rem;
 	font-size: 1.5rem;
 	font-weight: 500;
+
 	border: none;
-	border-radius: 50px;
-	background-color: #273de3; /* blue color */
-	color: white;
+	border-radius: var(--radius-pill);
+
+	background-color: var(--color-accent-blue);
+	color: var(--color-white);
+
 	cursor: pointer;
-	box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+	box-shadow: var(--shadow-soft);
+
 	transition:
 		transform 0.2s,
 		box-shadow 0.2s;
@@ -56,17 +113,16 @@ body {
 	transform: scale(1.05);
 }
 
-/* ============================= */
-/* Dashboard Page Background */
-/* ============================= */
-
+/* ============================================================
+   DASHBOARD PAGE BASE LAYOUT
+   ============================================================ */
 .dashboard-page {
 	position: relative;
 	min-height: 100svh;
 	background: url('/background/dashboardBackground.png') center / cover no-repeat;
 }
 
-/* Restore scene positioning without z-index traps */
+/* Ensures these elements behave like "scene props" */
 .top-nav,
 .overall-score-container,
 .movement-anchor,
@@ -75,6 +131,7 @@ body {
 	position: absolute;
 }
 
+/* Background canvas layer */
 .water-canvas {
 	position: absolute;
 	inset: 0;
@@ -84,15 +141,11 @@ body {
 	z-index: -1;
 }
 
-/* ============================= */
-/* Rock Midground Layer */
-/* ============================= */
-
+/* Midground rock layer */
 .rock-layer {
 	position: absolute;
 	bottom: 15vh;
 	left: 50%;
-
 	transform: translateX(-50%);
 
 	width: min(75vw, 420px);
@@ -102,10 +155,9 @@ body {
 	pointer-events: none;
 }
 
-/* ============================= */
-/* Top Navigation */
-/* ============================= */
-
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
 .top-nav {
 	position: fixed;
 	top: calc(env(safe-area-inset-top, 0));
@@ -118,43 +170,33 @@ body {
 	justify-content: space-between;
 	align-items: center;
 
-	z-index: 20; /* above water canvas */
-	pointer-events: none; /* let only buttons receive input */
+	z-index: 20;
+	pointer-events: none; /* only buttons should be clickable */
 }
 
-/* Re-enable interaction on buttons */
 .top-nav .bubble-button {
 	pointer-events: auto;
 }
 
-/* ============================= */
-/* Bubble Button */
-/* ============================= */
-
+/* ============================================================
+   REUSABLE "GLASS BUBBLE" BUTTON STYLE
+   ============================================================ */
 .bubble-button {
 	position: relative;
 	width: 60px;
 	height: 60px;
 	border-radius: 50%;
+	padding: 0;
 
 	border: none;
 	cursor: pointer;
-	padding: 0;
 
-	background: radial-gradient(
-		circle at 30% 30%,
-		rgba(255, 255, 255, 0.6),
-		rgba(180, 230, 255, 0.35) 40%,
-		rgba(120, 200, 240, 0.25) 70%
-	);
+	background: var(--bubble-gradient);
 
-	box-shadow:
-		inset -6px -8px 12px rgba(255, 255, 255, 0.35),
-		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
-		0 10px 20px rgba(0, 0, 0, 0.25);
+	box-shadow: var(--bubble-inset-shadow), var(--shadow-bubble);
 
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 
 	transition:
 		transform 0.2s ease,
@@ -164,35 +206,25 @@ body {
 .bubble-button:hover,
 .bubble-button:active {
 	transform: scale(1.08);
-	box-shadow:
-		inset -4px -6px 10px rgba(255, 255, 255, 0.4),
-		inset 2px 4px 8px rgba(0, 0, 0, 0.12),
-		0 14px 28px rgba(0, 0, 0, 0.35);
+	box-shadow: var(--bubble-inset-shadow-hover), var(--shadow-bubble-hover);
 }
 
-/* ============================= */
-/* Icon handling */
-/* ============================= */
-
+/* Button icons (static + animated swap) */
 .bubble-button .icon {
 	position: absolute;
 	top: 50%;
 	left: 50%;
-
 	width: 70%;
 	height: 70%;
-
 	transform: translate(-50%, -50%);
 	object-fit: contain;
 	pointer-events: none;
 }
 
-/* Show static icon by default */
 .bubble-button .animated {
 	opacity: 0;
 }
 
-/* Swap on hover OR touch */
 .bubble-button:hover .animated,
 .bubble-button:active .animated {
 	opacity: 1;
@@ -203,15 +235,12 @@ body {
 	opacity: 0;
 }
 
-/* ============================= */
-/* Overall Score – Layout */
-/* ============================= */
-
+/* ============================================================
+   OVERALL SCORE
+   ============================================================ */
 .overall-score-container {
 	pointer-events: auto;
-	position: absolute;
 
-	/* Visual center of the screen */
 	top: 25%;
 	left: 50%;
 	transform: translate(-50%, -50%);
@@ -221,61 +250,39 @@ body {
 	align-items: center;
 	gap: 0.5rem;
 
-	z-index: 1000; /* above water & rock */
+	z-index: 1000;
 }
-
-/* ============================= */
-/* Overall Score Label */
-/* ============================= */
 
 .overall-score-label {
 	font-size: 1rem;
-	color: white;
-
+	color: var(--color-white);
 	opacity: 0.85;
 	font-weight: 300;
 	font-style: italic;
-
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-/* ============================= */
-/* Overall Score Bubble */
-/* ============================= */
-
+/* Score bubble uses same bubble style system */
 .overall-score-bubble {
 	position: relative;
 	width: 180px;
 	height: 180px;
 	border-radius: 50%;
 
-	background: radial-gradient(
-		circle at 30% 30%,
-		rgba(255, 255, 255, 0.6),
-		rgba(180, 230, 255, 0.35) 40%,
-		rgba(120, 200, 240, 0.25) 70%
-	);
+	background: var(--bubble-gradient);
+	box-shadow: var(--bubble-inset-shadow), var(--shadow-bubble);
 
-	box-shadow:
-		inset -6px -8px 12px rgba(255, 255, 255, 0.35),
-		inset 4px 6px 10px rgba(0, 0, 0, 0.08),
-		0 10px 20px rgba(0, 0, 0, 0.25);
-
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 }
 
-/* SVG ring fills the bubble */
 .overall-score-bubble svg {
 	position: absolute;
 	inset: 0;
 	z-index: 1001;
 }
 
-/* ============================= */
-/* Score Text (centered) */
-/* ============================= */
-
+/* Center text in score bubble */
 .score-text {
 	position: absolute;
 	inset: 0;
@@ -286,29 +293,32 @@ body {
 
 	font-size: 24px;
 	font-weight: 300;
-	color: white;
+	color: var(--color-white);
 	font-family: inherit;
 
 	z-index: 3;
 }
 
+/* ============================================================
+   CORAL ANCHORS (clickable parts on dashboard)
+   ============================================================ */
 .movement-coral,
 .sleep-coral,
 .sport-coral {
 	all: unset;
 	position: absolute;
+	display: inline-block;
+
 	cursor: pointer;
 	pointer-events: auto;
 
 	-webkit-tap-highlight-color: transparent;
 	touch-action: manipulation;
-	display: inline-block;
 }
 
-/* ============================= */
-/* Overall Score Detail Overlay */
-/* ============================= */
-
+/* ============================================================
+   OVERALL SCORE DETAIL OVERLAY (Full screen blur)
+   ============================================================ */
 .overall-detail-root {
 	position: fixed;
 	inset: 0;
@@ -322,17 +332,22 @@ body {
 	cursor: pointer;
 }
 
+/* Shared blur overlay panel style */
 .overall-detail-panel {
 	position: absolute;
 	inset: 0;
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	color: white;
 	padding: 1rem 1.25rem;
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+	box-shadow: var(--glass-shadow-5);
+
+	color: var(--color-white);
 	box-sizing: border-box;
 	overflow-y: auto;
 }
 
+/* Sticky header for overlays */
 .overall-detail-header {
 	position: sticky;
 	top: 0;
@@ -344,7 +359,7 @@ body {
 .overall-detail-back {
 	background: none;
 	border: none;
-	color: white;
+	color: var(--color-white);
 	font-size: 3rem;
 	cursor: pointer;
 	line-height: 1;
@@ -416,202 +431,56 @@ body {
 	max-width: 320px;
 }
 
-/* ============================= */
-/* Movement Coral (ANCHOR) */
-/* ============================= */
-
+/* ============================================================
+   MOVEMENT CORAL (ANCHOR)
+   ============================================================ */
 .movement-coral {
-	display: block;
-	cursor: pointer;
-	pointer-events: auto;
-
-	position: absolute;
 	bottom: 45vh;
 	left: -2vw;
-
 	width: min(60vw, 420px);
 	z-index: 10;
-
-	-webkit-tap-highlight-color: transparent;
-	touch-action: manipulation;
 }
 
-.movement-coral-image {
-	width: 100%;
-	height: auto;
-	display: block;
-}
-
-.movement-overlay,
-.sleep-overlay,
-.workout-overlay {
-	position: relative;
-	min-height: 100%;
-	color: white;
-	padding-bottom: 8rem;
-}
-
-.movement-info-scroll,
-.sleep-info-scroll,
-.workout-info-scroll {
-	position: fixed;
-	top: calc(env(safe-area-inset-top, 5rem));
-
-	width: min(90vw, 360px);
-	max-height: calc(100vh - 12rem);
-
-	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
-
-	padding: 1.5rem 1.5rem 4rem;
-
-	z-index: 4;
-}
-
-.movement-text,
-.sleep-text,
-.workout-text {
-	max-width: 320px;
-	margin: 4rem auto 2rem;
-	font-weight: 300;
-	line-height: 1.6;
-}
-
-.movement-stats,
-.sleep-stats,
-.workout-stats {
-	margin: 2rem auto;
-	display: flex;
-	justify-content: space-evenly;
-	align-items: center;
-	background: rgba(255, 255, 255, 0.85);
-	color: #118fa8;
-	border-radius: 16px;
-	padding: 1rem 1.25rem;
-	width: min(90%, 360px);
-}
-
-.movement-stats .divider,
-.sleep-stats .divider,
-.workout-stats .divider {
-	width: 1px;
-	height: 32px;
-	background: rgba(0, 0, 0, 0.1);
-}
-
-.graph-toggle {
-	background: none;
-	border: none;
-	color: white;
-	font-size: 1rem;
-	font-weight: 600;
-	margin: 1rem auto;
-	display: block;
-}
-
-.movement-chart,
-.sleep-chart {
-	margin: 2rem auto 1rem;
-	width: min(90%, 360px);
-}
-
-.movement-chart-card {
-	background: rgba(255, 255, 255, 0.9);
-	border-radius: 18px;
-	padding: 1rem;
-	margin: 2rem auto 0;
-	width: min(90%, 360px);
-}
-
-.movement-overlay-coral,
-.sleep-overlay-coral,
-.workout-overlay-coral {
-	position: fixed;
-	bottom: -10vh;
-	left: -10vw;
-
-	width: min(60vw, 520px);
-
-	transform: rotate(35deg);
-	opacity: 0.9;
-
-	pointer-events: none;
-	z-index: 1;
-}
-
-.movement-overlay-title,
-.sleep-overlay-title,
-.workout-overlay-title {
-	position: fixed;
-	left: 1rem;
-	bottom: calc(env(safe-area-inset-bottom, 1rem));
-
-	font-size: 2.5rem;
-	font-weight: 600;
-	color: white;
-
-	z-index: 3;
-	pointer-events: none;
-}
-
-/* ============================= */
-/* Sleep Coral (ANCHOR) */
-/* ============================= */
-
-.sleep-coral {
-	position: absolute;
-	bottom: 27vh;
-	right: -12vw;
-
-	width: min(80vw, 420px);
-	z-index: 10;
-}
-
-.sleep-coral-image {
-	width: 100%;
-	height: auto;
-	display: block;
-}
-
-/* ============================= */
-/* Workout Coral Background (ANCHOR) */
-/* ============================= */
-
-.sport-coral {
-	position: absolute;
-	bottom: 13vh;
-	left: 20%;
-
-	width: min(45vw, 420px);
-	z-index: 2;
-}
-
+.movement-coral-image,
+.sleep-coral-image,
 .sport-coral-image {
 	width: 100%;
 	height: auto;
 	display: block;
 }
 
-/* ============================= */
-/* Workout Coral – Base Style */
-/* ============================= */
+/* ============================================================
+   SLEEP CORAL (ANCHOR)
+   ============================================================ */
+.sleep-coral {
+	bottom: 27vh;
+	right: -12vw;
+	width: min(80vw, 420px);
+	z-index: 10;
+}
 
+/* ============================================================
+   WORKOUT CORAL (ANCHOR)
+   ============================================================ */
+.sport-coral {
+	bottom: 13vh;
+	left: 20%;
+	width: min(45vw, 420px);
+	z-index: 2;
+}
+
+/* Decorative "plumes" */
 .workout-plume {
 	position: absolute;
-
 	width: min(20vw, 90px);
 	height: auto;
 
 	z-index: 4;
 	pointer-events: none;
-
 	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
 
-/* ============================= */
-/* Workout Coral – Plume Positions */
-/* ============================= */
-
+/* Plume positioning helpers */
 .plume-0 {
 	top: 40%;
 	left: -10%;
@@ -641,6 +510,131 @@ body {
 	left: 65%;
 }
 
+/* ============================================================
+   MOVEMENT / SLEEP / WORKOUT OVERLAYS (Shared Styles)
+   ============================================================ */
+.movement-overlay,
+.sleep-overlay,
+.workout-overlay {
+	position: relative;
+	min-height: 100%;
+	color: var(--color-white);
+	padding-bottom: 8rem;
+}
+
+/* Scrollable info panel (shared across all coral overlays) */
+.movement-info-scroll,
+.sleep-info-scroll,
+.workout-info-scroll {
+	position: fixed;
+	top: calc(env(safe-area-inset-top, 5rem));
+
+	width: var(--content-width);
+	max-height: calc(100vh - 12rem);
+
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+
+	padding: 1.5rem 1.5rem 4rem;
+	z-index: 4;
+}
+
+/* Text blocks */
+.movement-text,
+.sleep-text,
+.workout-text {
+	max-width: 320px;
+	margin: 4rem auto 2rem;
+	font-weight: 300;
+	line-height: 1.6;
+}
+
+/* Stat cards */
+.movement-stats,
+.sleep-stats,
+.workout-stats {
+	margin: 2rem auto;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+
+	background: var(--glass-bg-light);
+	color: var(--color-accent-teal);
+	border-radius: var(--radius-small);
+
+	padding: 1rem 1.25rem;
+	width: min(90%, 360px);
+}
+
+.movement-stats .divider,
+.sleep-stats .divider,
+.workout-stats .divider {
+	width: 1px;
+	height: 32px;
+	background: rgba(0, 0, 0, 0.1);
+}
+
+/* Charts */
+.movement-chart,
+.sleep-chart {
+	margin: 2rem auto 1rem;
+	width: var(--content-width);
+}
+
+/* Toggle graph button */
+.graph-toggle {
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 1rem;
+	font-weight: 600;
+	margin: 1rem auto;
+	display: block;
+}
+
+/* Movement chart card */
+.movement-chart-card {
+	background: rgba(255, 255, 255, 0.9);
+	border-radius: var(--radius-card);
+	padding: 1rem;
+	margin: 2rem auto 0;
+	width: var(--content-width);
+}
+
+/* Overlay decorative coral */
+.movement-overlay-coral,
+.sleep-overlay-coral,
+.workout-overlay-coral {
+	position: fixed;
+	bottom: -10vh;
+	left: -10vw;
+
+	width: min(60vw, 520px);
+
+	transform: rotate(35deg);
+	opacity: 0.9;
+
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Overlay title */
+.movement-overlay-title,
+.sleep-overlay-title,
+.workout-overlay-title {
+	position: fixed;
+	left: 1rem;
+	bottom: calc(env(safe-area-inset-bottom, 1rem));
+
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: var(--color-white);
+
+	z-index: 3;
+	pointer-events: none;
+}
+
+/* Workout stat layout variation */
 .workout-stats-3row {
 	flex-direction: column;
 	gap: 0.75rem;
@@ -667,6 +661,9 @@ body {
 	width: 100%;
 }
 
+/* ============================================================
+   GENERIC CORAL OVERLAY SHELL (Movement/Sleep/Workout Overlay Root)
+   ============================================================ */
 .coral-overlay-root {
 	position: fixed;
 	inset: 0;
@@ -681,14 +678,16 @@ body {
 }
 
 .coral-overlay-panel {
-	pointer-events: auto;
 	position: absolute;
 	inset: 0;
+	pointer-events: auto;
 
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+	box-shadow: var(--glass-shadow-5);
 }
 
+/* Shared overlay header + back button */
 .overlay-header {
 	position: sticky;
 	top: 0;
@@ -699,11 +698,13 @@ body {
 .back-button {
 	background: none;
 	border: none;
-	color: white;
+	color: var(--color-white);
 	font-size: 3rem;
 	pointer-events: auto;
+	cursor: pointer;
 }
 
+/* Full-click fish overlay */
 .fish-click {
 	all: unset;
 	position: absolute;
@@ -712,19 +713,19 @@ body {
 	cursor: pointer;
 }
 
-/* ============================= */
-/* Settings Page */
-/* ============================= */
-
+/* ============================================================
+   SETTINGS PAGE
+   ============================================================ */
 .settings-page {
 	width: 100%;
 	max-width: 100vw;
 	overflow-x: hidden;
 	box-sizing: border-box;
+
 	min-height: 100svh;
 	padding: 1rem;
 	position: relative;
-	color: white;
+	color: var(--color-white);
 }
 
 .settings-header {
@@ -732,6 +733,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	position: relative;
+
 	padding-top: calc(env(safe-area-inset-top, 0));
 	margin-top: 0.25rem;
 }
@@ -743,7 +745,7 @@ body {
 
 	background: none;
 	border: none;
-	color: white;
+	color: var(--color-white);
 	font-size: 2rem;
 	cursor: pointer;
 }
@@ -770,32 +772,38 @@ body {
 	color: #ffd1d1;
 }
 
+/* Settings glass card */
 .settings-card {
 	max-width: 92vw;
 	box-sizing: border-box;
+
 	margin: 2rem auto 0;
 	width: min(92vw, 420px);
 
-	background: rgba(255, 255, 255, 0.75);
-	border-radius: 18px;
+	background: var(--glass-bg-medium);
+	border-radius: var(--radius-card);
 	padding: 1.25rem;
 
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	color: #118fa8;
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+	box-shadow: var(--glass-shadow-5);
+
+	color: var(--color-accent-teal);
 }
 
 .settings-card-title {
 	margin: 0 0 1rem;
 	text-align: center;
 	font-weight: 700;
-	color: #118fa8;
+	color: var(--color-accent-teal);
 }
 
+/* Rows */
 .settings-row {
-	gap: 1rem;
 	display: flex;
 	justify-content: space-between;
+	gap: 1rem;
+
 	padding: 0.9rem 0;
 	border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -820,6 +828,7 @@ body {
 	font-weight: 500;
 }
 
+/* Logout button */
 .settings-logout {
 	position: fixed;
 	right: 2rem;
@@ -827,26 +836,27 @@ body {
 
 	background: none;
 	border: none;
-	color: white;
+	color: var(--color-white);
+
 	font-size: 1rem;
 	font-weight: 600;
 	cursor: pointer;
 }
 
-/* ============================= */
-/* History Page */
-/* ============================= */
-
+/* ============================================================
+   HISTORY PAGE
+   ============================================================ */
 .history-page {
 	min-height: 100svh;
 	position: relative;
+
 	padding: 1rem;
 	padding-bottom: 3rem;
 	box-sizing: border-box;
-	color: white;
 
-	/* uses your global body background already */
+	color: var(--color-white);
 	overflow-x: hidden;
+
 	background: url('/background/dashboardBackground.png') center / cover no-repeat;
 }
 
@@ -854,6 +864,7 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+
 	position: relative;
 	padding-top: calc(env(safe-area-inset-top, 0));
 }
@@ -865,7 +876,7 @@ body {
 
 	background: none;
 	border: none;
-	color: white;
+	color: var(--color-white);
 	font-size: 2.5rem;
 	cursor: pointer;
 }
@@ -886,7 +897,7 @@ body {
 	line-height: 1.4;
 }
 
-/* Main layout */
+/* Layout */
 .history-main {
 	margin-top: 1rem;
 	display: flex;
@@ -900,8 +911,10 @@ body {
 	position: relative;
 	width: min(60vw, 240px);
 	height: 75vh;
+
 	margin-left: -1rem;
 	transform: translateY(6vh);
+
 	display: flex;
 	align-items: flex-start;
 	justify-content: center;
@@ -913,11 +926,11 @@ body {
 	display: block;
 }
 
-/* Corals on rock (placeholder positions) */
+/* Decorative corals */
 .history-coral {
 	position: absolute;
-	width: auto;
 	height: 55px;
+	width: auto;
 	pointer-events: none;
 }
 
@@ -936,21 +949,22 @@ body {
 	left: 18%;
 }
 
-/* Week buttons */
+/* Week buttons panel */
 .history-weeks {
 	display: flex;
 	flex-direction: column;
-	justify-content: space-between; /* ✅ evenly spaced */
-	height: 75vh; /* ✅ matches rock height */
-	padding-top: 3rem;
-	padding-bottom: 3rem;
-	padding-right: 0.75rem;
+	justify-content: space-between;
+
+	height: 75vh;
+	padding: 3rem 0.75rem;
 }
 
+/* Coral row for each week */
 .history-week-coral {
 	position: absolute;
 	left: 0;
 	width: 100%;
+
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
@@ -970,28 +984,55 @@ body {
 	top: 77%;
 }
 
-/* -------------------- */
-/* WEEK 1 CUSTOM SIZES  */
-/* -------------------- */
+/* Week workout wrapper (for plumes positioning) */
+.history-workout-wrapper {
+	position: relative;
+	display: inline-block;
+}
 
+/* Week button style */
+.history-week-button {
+	background: var(--glass-bg-soft);
+	border: none;
+	color: var(--color-white);
+
+	padding: 0.5rem 1rem;
+	border-radius: 14px;
+
+	font-size: 0.8rem;
+	font-weight: 500;
+
+	cursor: pointer;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.history-week-button.active-week {
+	background: var(--glass-bg-soft-active);
+	font-weight: 600;
+}
+
+/* ============================================================
+   WEEK CUSTOM CORAL SIZE / POSITION OVERRIDES
+   (These are intentionally specific, so they stay per-week)
+   ============================================================ */
+
+/* WEEK 1 */
 .week1-sleep {
 	height: 150px;
 	transform: translateX(10vw) translateY(-12vh);
 	z-index: 3;
 }
-
 .week1-movement {
 	height: 150px;
 	transform: translateX(5vw) translateY(-13vh);
 	z-index: 2;
 }
-
 .week1-workout {
 	height: 80px;
 	transform: translateX(2vw) translateY(-9vh);
 	z-index: 4;
 }
-
 .week1-workout-wrapper .workout-plume {
 	height: 20px;
 	width: auto;
@@ -999,28 +1040,22 @@ body {
 	z-index: 5;
 }
 
-/* -------------------- */
-/* WEEK 2 CUSTOM SIZES  */
-/* -------------------- */
-
+/* WEEK 2 */
 .week2-sleep {
 	height: 150px;
 	transform: translateX(35vw) translateY(-5vh);
 	z-index: 3;
 }
-
 .week2-movement {
 	height: 150px;
 	transform: translateX(25vw) translateY(-6vh);
 	z-index: 2;
 }
-
 .week2-workout {
 	height: 80px;
 	transform: translateX(20vw) translateY(-3vh);
 	z-index: 4;
 }
-
 .week2-workout-wrapper .workout-plume {
 	height: 20px;
 	width: auto;
@@ -1028,28 +1063,22 @@ body {
 	z-index: 5;
 }
 
-/* -------------------- */
-/* WEEK 3 CUSTOM SIZES  */
-/* -------------------- */
-
+/* WEEK 3 */
 .week3-sleep {
 	height: 150px;
 	transform: translateX(25vw) translateY(5vh);
 	z-index: 3;
 }
-
 .week3-movement {
 	height: 150px;
 	transform: translateX(20vw) translateY(4vh);
 	z-index: 2;
 }
-
 .week3-workout {
 	height: 80px;
 	transform: translateX(15vw) translateY(8vh);
 	z-index: 4;
 }
-
 .week3-workout-wrapper .workout-plume {
 	height: 20px;
 	width: auto;
@@ -1057,28 +1086,22 @@ body {
 	z-index: 5;
 }
 
-/* -------------------- */
-/* WEEK 4 CUSTOM SIZES  */
-/* -------------------- */
-
+/* WEEK 4 */
 .week4-sleep {
 	height: 150px;
 	transform: translateX(30vw) translateY(29vh);
 	z-index: 3;
 }
-
 .week4-movement {
 	height: 150px;
 	transform: translateX(25vw) translateY(29vh);
 	z-index: 2;
 }
-
 .week4-workout {
 	height: 80px;
 	transform: translateX(12vw) translateY(28vh);
 	z-index: 4;
 }
-
 .week4-workout-wrapper .workout-plume {
 	height: 20px;
 	width: auto;
@@ -1086,45 +1109,22 @@ body {
 	z-index: 5;
 }
 
-.history-workout-wrapper {
-	position: relative;
-	display: inline-block;
-}
-
-.history-week-button {
-	background: rgba(255, 255, 255, 0.3);
-	border: none;
-	color: white;
-	padding: 0.5rem 1rem;
-	border-radius: 14px;
-	font-size: 0.8rem;
-	font-weight: 500;
-	cursor: pointer;
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-}
-
-.history-week-button.active-week {
-	background: rgba(255, 255, 255, 0.5);
-	font-weight: 600;
-}
-
-/* Bottom dropdown bar */
+/* ============================================================
+   HISTORY DROPDOWN (Bottom selector)
+   ============================================================ */
 .history-dropdown {
 	position: relative;
-	left: auto;
-	transform: none;
 
 	margin: 10rem auto 1rem;
+	width: var(--content-width);
 
-	width: min(92vw, 360px);
 	padding: 0.75rem 1rem;
 
 	border: none;
-	border-radius: 16px;
+	border-radius: var(--radius-small);
 
-	background: rgba(255, 255, 255, 0.85);
-	color: #118fa8;
+	background: var(--glass-bg-light);
+	color: var(--color-accent-teal);
 
 	font-size: 0.9rem;
 	font-weight: 600;
@@ -1140,10 +1140,9 @@ body {
 	opacity: 0.8;
 }
 
-/* ============================= */
-/* Monthly Reef Overlay (History Dropdown) */
-/* ============================= */
-
+/* ============================================================
+   MONTHLY OVERLAY (History dropdown overlay)
+   ============================================================ */
 .monthly-overlay-root {
 	position: fixed;
 	inset: 0;
@@ -1161,19 +1160,19 @@ body {
 	position: absolute;
 	inset: 0;
 
-	/* ✅ slight blur only, no tint, no shadow */
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+	box-shadow: var(--glass-shadow-5);
 
 	padding: 1rem;
-	color: white;
+	color: var(--color-white);
 	box-sizing: border-box;
 }
 
 .monthly-overlay-back {
 	background: none;
 	border: none;
-	color: white;
+	color: var(--color-white);
 	font-size: 2.5rem;
 	cursor: pointer;
 }
@@ -1183,6 +1182,7 @@ body {
 	top: calc(env(safe-area-inset-top, 0) + 1rem);
 	left: 50%;
 	transform: translateX(-50%);
+
 	margin: 0;
 	font-size: 1.2rem;
 	font-weight: 600;
@@ -1191,6 +1191,7 @@ body {
 .monthly-overlay-intro {
 	margin-top: 5rem;
 	text-align: center;
+
 	font-weight: 300;
 	font-size: 0.9rem;
 	line-height: 1.4;
@@ -1209,7 +1210,7 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 1.5rem;
-	width: min(92vw, 360px);
+	width: var(--content-width);
 }
 
 .monthly-overlay-coral {
@@ -1238,9 +1239,11 @@ body {
 	left: 50%;
 	transform: translateX(-50%);
 	bottom: calc(env(safe-area-inset-bottom, 0) + 1.5rem);
+
 	text-align: center;
 	font-size: 0.9rem;
 	font-weight: 600;
 	line-height: 1.4;
-	width: min(92vw, 360px);
+
+	width: var(--content-width);
 }
