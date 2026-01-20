@@ -1,67 +1,93 @@
 <script>
 	import { onMount } from 'svelte';
 
+	/* Total steps from the user (used to calculate fish count) */
 	export let totalSteps = 0;
+
+	/* Callback when user clicks the fish (opens details overlay) */
 	export let onOpen = () => {};
 
-	/* STEP → FISH COUNT */
-	$: fishCount =
-		totalSteps >= 55000 ? 3 :
-		totalSteps >= 25000 ? 2 :
-		totalSteps >= 10000 ? 1 : 0;
+	/* Step → Fish count  */
+	$: fishCount = totalSteps >= 55000 ? 3 : totalSteps >= 25000 ? 2 : totalSteps >= 10000 ? 1 : 0;
 
-	let x = -200;          // starting off-screen
-	let direction = 1;     // 1 = right, -1 = left
-	let speed = 0.35;      // swimming speed
+	/* Swimming animation state */
+	const OFFSCREEN_PADDING = 200;
+
+	/* Current horizontal position of the fish school */
+	let x = -OFFSCREEN_PADDING;
+
+	/* 1 = right, -1 = left */
+	let direction = 1;
+
+	/* Swimming speed per frame */
+	let speed = 0.35;
+
+	/* Used for boundary checks */
 	let screenWidth = 0;
 
+	let frameId;
+
 	onMount(() => {
+		/* Get screen width when component mounts */
 		screenWidth = window.innerWidth;
 
+		/* Keep it responsive on resize/rotation */
+		const handleResize = () => {
+			screenWidth = window.innerWidth;
+		};
+
+		window.addEventListener('resize', handleResize);
+
+		/* Main animation loop */
 		const loop = () => {
 			x += speed * direction;
 
-			/* when school fully leaves screen */
-			if (direction === 1 && x > screenWidth + 200) {
+			/* If the school leaves the right side → flip direction */
+			if (direction === 1 && x > screenWidth + OFFSCREEN_PADDING) {
 				direction = -1;
-				x = screenWidth + 200;
+				x = screenWidth + OFFSCREEN_PADDING;
 			}
 
-			if (direction === -1 && x < -200) {
+			/* If the school leaves the left side → flip direction */
+			if (direction === -1 && x < -OFFSCREEN_PADDING) {
 				direction = 1;
-				x = -200;
+				x = -OFFSCREEN_PADDING;
 			}
 
-			requestAnimationFrame(loop);
+			frameId = requestAnimationFrame(loop);
 		};
 
 		loop();
+
+		/* Cleanup on destroy */
+		return () => {
+			window.removeEventListener('resize', handleResize);
+			cancelAnimationFrame(frameId);
+		};
 	});
 </script>
 
 {#if fishCount > 0}
-	<button
-		type="button"
-		class="fish-click"
-		aria-label="Open sea life details"
-		on:click={onOpen}
-	>
-		<div
-			class="fish-school"
-			style="transform: translateX({x}px) scaleX({direction});"
-		>
+	<!-- Clickable fish area (class is styled globally in app.css) -->
+	<button type="button" class="fish-click" aria-label="Open sea life details" on:click={onOpen}>
+		<!-- Fish school container:
+		     translateX = movement
+		     scaleX = flip direction -->
+		<div class="fish-school" style="transform: translateX({x}px) scaleX({direction});">
 			{#each Array(fishCount) as _, i}
+				<!--
+					Each fish gets custom CSS variables:
+					--offset-x = spacing between fish
+					--offset-y = vertical variation
+					--delay    = animation delay for natural movement
+				-->
 				<img
+					class="fish"
 					src="/fish/fish-steps.png"
 					alt=""
-					class="fish"
 					style="
 						--offset-x: {i * 24}px;
-						--offset-y: {
-							i === 1 ? -10 :
-							i === 2 ? 8 :
-							0
-						}px;
+						--offset-y: {i === 1 ? -10 : i === 2 ? 8 : 0}px;
 						--delay: {i * 0.15}s;
 					"
 				/>
@@ -69,44 +95,3 @@
 		</div>
 	</button>
 {/if}
-
-<style>
-	.fish-school {
-		position: absolute;
-		bottom: 55vh;
-		left: 0;
-
-		display: flex;
-		align-items: center;
-
-		pointer-events: none;
-		z-index: 4;
-	}
-
-	.fish {
-		width: 90px;
-		height: auto;
-
-		transform:
-			translateX(var(--offset-x))
-			translateY(var(--offset-y));
-
-		animation: fish-tail 1.8s ease-in-out infinite;
-		animation-delay: var(--delay);
-	}
-
-	@keyframes fish-tail {
-		0%, 100% {
-			transform:
-				translateX(var(--offset-x))
-				translateY(var(--offset-y))
-				rotate(0deg);
-		}
-		50% {
-			transform:
-				translateX(calc(var(--offset-x) + 6px))
-				translateY(var(--offset-y))
-				rotate(2deg);
-		}
-	}
-</style>

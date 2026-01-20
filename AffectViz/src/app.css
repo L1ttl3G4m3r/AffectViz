@@ -13,8 +13,7 @@
 	--color-accent-teal: #118fa8;
 
 	/* Glass / blur overlay */
-	--glass-blur: blur(20px);
-	--glass-shadow-5: 0 0 30px rgba(0, 0, 0, 0.3);
+	--glass-blur: blur(20px); /* background detail pages */
 	--glass-bg-light: rgba(255, 255, 255, 0.85);
 	--glass-bg-medium: rgba(255, 255, 255, 0.75);
 	--glass-bg-soft: rgba(255, 255, 255, 0.3);
@@ -340,7 +339,6 @@ body {
 
 	backdrop-filter: var(--glass-blur);
 	-webkit-backdrop-filter: var(--glass-blur);
-	box-shadow: var(--glass-shadow-5);
 
 	color: var(--color-white);
 	box-sizing: border-box;
@@ -431,6 +429,83 @@ body {
 	max-width: 320px;
 }
 
+/* ============================= */
+/* Sea Life Detail Overlay Content */
+/* ============================= */
+
+.sea-life-overlay {
+	width: min(90vw, 380px);
+	margin: 0 auto;
+	padding: 0.5rem 1.25rem 2rem;
+
+	color: white;
+	font-weight: 300;
+	line-height: 1.5;
+
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.intro,
+.outro {
+	font-size: 0.95rem;
+	opacity: 0.95;
+	margin-bottom: 1.25rem;
+}
+
+/* Each sea-life row layout (icon + text content) */
+.fish-row {
+	display: grid;
+	grid-template-columns: 64px 1fr;
+	gap: 0.9rem;
+
+	align-items: start;
+	margin-bottom: 1.3rem;
+}
+
+.fish-icon {
+	width: 52px;
+	height: auto;
+	object-fit: contain;
+	justify-content: center;
+	filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+}
+
+.fish-content {
+	display: grid;
+	grid-template-columns: 1fr auto; /* title on left, progress on right */
+	column-gap: 0.75rem;
+	row-gap: 0.25rem;
+	align-items: start;
+}
+
+.fish-title {
+	grid-column: 1;
+	margin: 0;
+	padding: 0;
+	line-height: 1.2;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+/* Progress indicator positioned near the icon */
+.fish-progress {
+	grid-column: 2;
+	align-self: start;
+
+	font-size: 0.9rem;
+	font-weight: 500;
+	opacity: 0.85;
+
+	margin: 0;
+}
+
+.fish-text {
+	grid-column: 1 / -1;
+	margin: 0;
+	font-size: 0.9rem;
+	opacity: 0.85;
+}
+
 /* ============================================================
    MOVEMENT CORAL (ANCHOR)
    ============================================================ */
@@ -508,6 +583,135 @@ body {
 .plume-6 {
 	top: 28%;
 	left: 65%;
+}
+
+/* ============================= */
+/* Fish School (Steps Animation) */
+/* ============================= */
+
+.fish-school {
+	position: absolute;
+	bottom: 55vh;
+	left: 0;
+
+	display: flex;
+	align-items: center;
+
+	/* fish are clickable via the parent button, not individually */
+	pointer-events: none;
+
+	z-index: 4;
+}
+
+.fish {
+	width: 90px;
+	height: auto;
+
+	transform: translateX(var(--offset-x)) translateY(var(--offset-y));
+
+	animation: fish-tail 1.8s ease-in-out infinite;
+	animation-delay: var(--delay);
+}
+
+@keyframes fish-tail {
+	0%,
+	100% {
+		transform: translateX(var(--offset-x)) translateY(var(--offset-y)) rotate(0deg);
+	}
+
+	50% {
+		transform: translateX(calc(var(--offset-x) + 6px)) translateY(var(--offset-y)) rotate(2deg);
+	}
+}
+
+/* ============================= */
+/* Fish School (Workout Animation) */
+/* ============================= */
+
+/* Workout fish are placed lower and rendered above some scene layers */
+.fish-school.workout {
+	bottom: 20vh; /* lower than step fish */
+	z-index: 11;
+}
+
+/* Workout fish are smaller */
+.fish-school.workout .fish {
+	width: 60px;
+}
+
+/* Workout fish have a slightly faster tail wiggle */
+.fish-school.workout .fish {
+	animation-duration: 1.6s;
+}
+
+/* ============================= */
+/* Fish (Sleep Animation) */
+/* ============================= */
+
+/* Sleep fish swims higher in the scene (calmer water area) */
+.fish-sleep {
+	position: absolute;
+	bottom: 80vh; /* higher, calm water */
+	left: 0;
+
+	pointer-events: none;
+	z-index: 2; /* slightly behind step fish */
+}
+
+/* Sleep fish is bigger and has a calmer animation */
+.fish-sleep .fish {
+	width: 120px;
+	height: auto;
+
+	transform: translateY(var(--offset-y));
+	animation: sleep-tail 2.4s ease-in-out infinite;
+}
+
+/* Gentle sleep-tail movement */
+@keyframes sleep-tail {
+	0%,
+	100% {
+		transform: translateY(var(--offset-y)) rotate(0deg);
+	}
+
+	50% {
+		transform: translateY(var(--offset-y)) rotate(1.5deg);
+	}
+}
+
+/* ============================= */
+/* Turtle (Bonus Sea Life) */
+/* ============================= */
+
+/* Turtle swims near the seabed */
+.turtle {
+	position: absolute;
+	bottom: 18vh; /* near seabed */
+	left: 0;
+
+	pointer-events: none;
+	z-index: 12; /* behind fish, in front of background */
+}
+
+/* Turtle image floats + flaps gently */
+.turtle-img {
+	width: 72px;
+	height: auto;
+
+	transform: translateY(var(--float));
+	animation: turtle-flap 3.8s ease-in-out infinite;
+}
+
+/* Slow calm rotation/flap motion */
+@keyframes turtle-flap {
+	0%,
+	100% {
+		transform: translateY(var(--float)) rotate(0deg);
+	}
+
+	50% {
+		transform: translateY(var(--float)) rotate(1deg);
+	}
 }
 
 /* ============================================================
@@ -684,7 +888,6 @@ body {
 
 	backdrop-filter: var(--glass-blur);
 	-webkit-backdrop-filter: var(--glass-blur);
-	box-shadow: var(--glass-shadow-5);
 }
 
 /* Shared overlay header + back button */
@@ -786,7 +989,6 @@ body {
 
 	backdrop-filter: var(--glass-blur);
 	-webkit-backdrop-filter: var(--glass-blur);
-	box-shadow: var(--glass-shadow-5);
 
 	color: var(--color-accent-teal);
 }
@@ -1162,7 +1364,6 @@ body {
 
 	backdrop-filter: var(--glass-blur);
 	-webkit-backdrop-filter: var(--glass-blur);
-	box-shadow: var(--glass-shadow-5);
 
 	padding: 1rem;
 	color: var(--color-white);
