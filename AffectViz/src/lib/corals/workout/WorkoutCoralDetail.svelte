@@ -4,29 +4,39 @@
 
 	export let data;
 
+	/* Score tier (controls which explanation text is shown) */
 	let tier = 'low';
 
+	/*
+		data.growth is expected between 0 and 1.
+		We convert to percentage for scoreTier().
+	*/
 	$: if (data?.growth != null) {
 		tier = scoreTier(data.growth * 100);
 	}
 </script>
 
+<!-- Workout overlay screen -->
 <section class="workout-overlay">
-	<div class="workout-info-scroll">
-		<div class="workout-text">
+	<!-- Main scrollable overlay content -->
+	<main class="workout-info-scroll">
+		<!-- Tier-based explanation text -->
+		<section class="workout-text">
 			{#each workoutConfig.tiers[tier].text as paragraph}
 				<p>{paragraph}</p>
 			{/each}
-		</div>
+		</section>
 
-		<!-- ✅ Updated stats card -->
-		<div class="workout-stats workout-stats-3row">
+		<!-- Stats block (styled like a card via CSS) -->
+		<section class="workout-stats workout-stats-3row">
+			<!-- Top row: calories + time -->
 			<div class="workout-stats-top">
 				<div>
 					<strong>Cal burned</strong>
 					<span>{data?.workoutCalories ?? 0}</span>
 				</div>
 
+				<!-- Divider (CSS already styles .divider) -->
 				<div class="divider"></div>
 
 				<div>
@@ -35,6 +45,7 @@
 				</div>
 			</div>
 
+			<!-- Bottom row: average heart rate -->
 			<div class="workout-stats-bottom">
 				<hr class="workout-divider" />
 
@@ -43,16 +54,12 @@
 					<span>{data?.avgHeartRate ?? '–'}</span>
 				</div>
 			</div>
-		</div>
-	</div>
+		</section>
+	</main>
 
-	<img
-		src="/background/sportCoral.png"
-		alt=""
-		class="workout-overlay-coral"
-	/>
+	<!-- Decorative coral image -->
+	<img src="/background/sportCoral.png" alt="" class="workout-overlay-coral" />
 
-	<h1 class="workout-overlay-title">
-		{workoutConfig.title}
-	</h1>
+	<!-- Screen title (positioned via CSS) -->
+	<h1 class="workout-overlay-title">{workoutConfig.title}</h1>
 </section>
