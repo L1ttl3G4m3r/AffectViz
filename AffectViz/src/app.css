@@ -208,7 +208,7 @@ body {
 /* ============================= */
 
 .overall-score-container {
-	pointer-events: none;
+	pointer-events: auto;
 	position: absolute;
 
 	/* Visual center of the screen */
@@ -221,7 +221,7 @@ body {
 	align-items: center;
 	gap: 0.5rem;
 
-	z-index: 2; /* above water & rock */
+	z-index: 1000; /* above water & rock */
 }
 
 /* ============================= */
@@ -269,7 +269,7 @@ body {
 .overall-score-bubble svg {
 	position: absolute;
 	inset: 0;
-	z-index: 1;
+	z-index: 1001;
 }
 
 /* ============================= */
@@ -303,6 +303,117 @@ body {
 	-webkit-tap-highlight-color: transparent;
 	touch-action: manipulation;
 	display: inline-block;
+}
+
+/* ============================= */
+/* Overall Score Detail Overlay */
+/* ============================= */
+
+.overall-detail-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.overall-detail-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+.overall-detail-panel {
+	position: absolute;
+	inset: 0;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	color: white;
+	padding: 1rem 1.25rem;
+	box-sizing: border-box;
+	overflow-y: auto;
+}
+
+.overall-detail-header {
+	position: sticky;
+	top: 0;
+	padding-top: calc(env(safe-area-inset-top, 0));
+	padding-bottom: 0.5rem;
+	z-index: 2;
+}
+
+.overall-detail-back {
+	background: none;
+	border: none;
+	color: white;
+	font-size: 3rem;
+	cursor: pointer;
+	line-height: 1;
+}
+
+.overall-detail-title {
+	text-align: center;
+	font-size: 1.3rem;
+	font-weight: 600;
+	margin: 0.25rem 0 0.75rem;
+}
+
+.overall-detail-subtitle {
+	text-align: center;
+	font-size: 0.95rem;
+	font-weight: 300;
+	opacity: 0.95;
+	line-height: 1.35;
+	margin: 0 0 2.5rem;
+}
+
+.overall-detail-content {
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+}
+
+.overall-detail-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.25rem;
+	width: 100%;
+}
+
+.overall-detail-ring {
+	position: relative;
+	width: 72px;
+	height: 72px;
+	flex-shrink: 0;
+}
+
+.overall-detail-ring svg {
+	position: absolute;
+	inset: 0;
+}
+
+.overall-detail-percent {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.overall-detail-text h2 {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+.overall-detail-text p {
+	margin: 0.4rem 0 0;
+	font-size: 0.85rem;
+	font-weight: 300;
+	line-height: 1.4;
+	opacity: 0.9;
+	max-width: 320px;
 }
 
 /* ============================= */

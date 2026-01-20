@@ -13,12 +13,14 @@
 	import Turtle from '$lib/components/Turtle.svelte';
 	import SeaLifeOverlay from '$lib/components/SeaLifeOverlay.svelte';
 	import { goto } from '$app/navigation';
+	import OverallScoreOverlay from '$lib/components/OverallScoreOverlay.svelte';
 
 	let activeCoral = null;
 	let movementData = null;
 	let sleepData = null;
 	let workoutData = null;
 	let activeInfoOverlay = null;
+	let activeOverallOverlay = false;
 
 	/* ================= Water animation ================= */
 
@@ -173,7 +175,13 @@
 	<!-- Overall score -->
 	<div class="overall-score-container">
 		<div class="overall-score-label">Daily score</div>
-		<div class="overall-score-bubble">
+
+		<button
+			type="button"
+			class="overall-score-bubble"
+			aria-label="Open overall score details"
+			on:click={() => (activeOverallOverlay = true)}
+		>
 			<svg viewBox="0 0 80 80">
 				<circle
 					cx="40"
@@ -220,8 +228,17 @@
 			</svg>
 
 			<div class="score-text">{overallScore ?? '–'}%</div>
-		</div>
+		</button>
 	</div>
+
+	{#if activeOverallOverlay}
+		<OverallScoreOverlay
+			{overallScore}
+			{sleepScore}
+			{cardioScore}
+			onClose={() => (activeOverallOverlay = false)}
+		/>
+	{/if}
 
 	<img src="/background/rock.png" alt="" class="rock-layer" />
 
