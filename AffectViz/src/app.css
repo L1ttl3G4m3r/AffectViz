@@ -1,0 +1,1450 @@
+/* ============================================================
+   ROOT VARIABLES (Design Tokens)
+   ============================================================ */
+:root {
+	/* Ring colors */
+	--ring-sleep: rgba(180, 160, 255, 0.95); /* lavender */
+	--ring-cardio: rgba(255, 170, 120, 0.95); /* peach */
+
+	/* Global colors */
+	--color-white: #ffffff;
+	--color-text-dark: #1f2937;
+	--color-accent-blue: #273de3;
+	--color-accent-teal: #118fa8;
+
+	/* Glass / blur overlay */
+	--glass-blur: blur(20px); /* background detail pages */
+	--glass-bg-light: rgba(255, 255, 255, 0.85);
+	--glass-bg-medium: rgba(255, 255, 255, 0.75);
+	--glass-bg-soft: rgba(255, 255, 255, 0.3);
+	--glass-bg-soft-active: rgba(255, 255, 255, 0.5);
+
+	/* Shadows */
+	--shadow-soft: 0 4px 4px rgba(0, 0, 0, 0.25);
+	--shadow-bubble: 0 10px 20px rgba(0, 0, 0, 0.25);
+	--shadow-bubble-hover: 0 14px 28px rgba(0, 0, 0, 0.35);
+
+	/* Bubble inner shadows */
+	--bubble-inset-shadow:
+		inset -6px -8px 12px rgba(255, 255, 255, 0.35), inset 4px 6px 10px rgba(0, 0, 0, 0.08);
+
+	--bubble-inset-shadow-hover:
+		inset -4px -6px 10px rgba(255, 255, 255, 0.4), inset 2px 4px 8px rgba(0, 0, 0, 0.12);
+
+	/* Bubble gradient */
+	--bubble-gradient: radial-gradient(
+		circle at 30% 30%,
+		rgba(255, 255, 255, 0.6),
+		rgba(180, 230, 255, 0.35) 40%,
+		rgba(120, 200, 240, 0.25) 70%
+	);
+
+	/* Border radius */
+	--radius-pill: 50px;
+	--radius-card: 18px;
+	--radius-small: 16px;
+
+	/* Layout */
+	--content-width: min(90vw, 360px);
+}
+
+/* ============================================================
+   GLOBAL PAGE BASE
+   ============================================================ */
+html,
+body {
+	height: 100%;
+	margin: 0;
+	font-family: 'Poppins', sans-serif;
+	color: var(--color-text-dark);
+
+	/* Default background (Login uses this) */
+	background: url('/background/backgroundLogin.png') no-repeat center center fixed;
+	background-size: cover;
+	background-color: transparent;
+}
+
+/* ============================================================
+   LOGIN PAGE
+   ============================================================ */
+.login-container {
+	min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem;
+
+	padding: 0 1rem;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+.login-container h1 {
+	color: var(--color-white);
+	font-size: 1.5rem;
+	font-weight: 200;
+	font-style: italic;
+	margin-bottom: 0;
+}
+
+/* Login button */
+.login-container button {
+	padding: 0.75rem 3rem;
+	font-size: 1.5rem;
+	font-weight: 500;
+
+	border: none;
+	border-radius: var(--radius-pill);
+
+	background-color: var(--color-accent-blue);
+	color: var(--color-white);
+
+	cursor: pointer;
+	box-shadow: var(--shadow-soft);
+
+	transition:
+		transform 0.2s,
+		box-shadow 0.2s;
+}
+
+.login-container button:hover {
+	transform: scale(1.05);
+}
+
+/* ============================================================
+   DASHBOARD PAGE BASE LAYOUT
+   ============================================================ */
+.dashboard-page {
+	position: relative;
+	min-height: 100svh;
+	background: url('/background/dashboardBackground.png') center / cover no-repeat;
+}
+
+/* Ensures these elements behave like "scene props" */
+.top-nav,
+.overall-score-container,
+.movement-anchor,
+.sleep-anchor,
+.sport-anchor {
+	position: absolute;
+}
+
+/* Background canvas layer */
+.water-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: -1;
+}
+
+/* Midground rock layer */
+.rock-layer {
+	position: absolute;
+	bottom: 15vh;
+	left: 50%;
+	transform: translateX(-50%);
+
+	width: min(75vw, 420px);
+	height: auto;
+
+	z-index: 1;
+	pointer-events: none;
+}
+
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
+.top-nav {
+	position: fixed;
+	top: calc(env(safe-area-inset-top, 0));
+	left: 0;
+	right: 0;
+
+	padding: 1rem 1.25rem;
+
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	z-index: 20;
+	pointer-events: none; /* only buttons should be clickable */
+}
+
+.top-nav .bubble-button {
+	pointer-events: auto;
+}
+
+/* ============================================================
+   REUSABLE "GLASS BUBBLE" BUTTON STYLE
+   ============================================================ */
+.bubble-button {
+	position: relative;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	padding: 0;
+
+	border: none;
+	cursor: pointer;
+
+	background: var(--bubble-gradient);
+
+	box-shadow: var(--bubble-inset-shadow), var(--shadow-bubble);
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.bubble-button:hover,
+.bubble-button:active {
+	transform: scale(1.08);
+	box-shadow: var(--bubble-inset-shadow-hover), var(--shadow-bubble-hover);
+}
+
+/* Button icons (static + animated swap) */
+.bubble-button .icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 70%;
+	height: 70%;
+	transform: translate(-50%, -50%);
+	object-fit: contain;
+	pointer-events: none;
+}
+
+.bubble-button .animated {
+	opacity: 0;
+}
+
+.bubble-button:hover .animated,
+.bubble-button:active .animated {
+	opacity: 1;
+}
+
+.bubble-button:hover .static,
+.bubble-button:active .static {
+	opacity: 0;
+}
+
+/* ============================================================
+   OVERALL SCORE
+   ============================================================ */
+.overall-score-container {
+	pointer-events: auto;
+
+	top: 25%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+
+	z-index: 1000;
+}
+
+.overall-score-label {
+	font-size: 1rem;
+	color: var(--color-white);
+	opacity: 0.85;
+	font-weight: 300;
+	font-style: italic;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Score bubble uses same bubble style system */
+.overall-score-bubble {
+	position: relative;
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+
+	background: var(--bubble-gradient);
+	box-shadow: var(--bubble-inset-shadow), var(--shadow-bubble);
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+}
+
+.overall-score-bubble svg {
+	position: absolute;
+	inset: 0;
+	z-index: 1001;
+}
+
+/* Center text in score bubble */
+.score-text {
+	position: absolute;
+	inset: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	font-size: 24px;
+	font-weight: 300;
+	color: var(--color-white);
+	font-family: inherit;
+
+	z-index: 3;
+}
+
+/* ============================================================
+   CORAL ANCHORS (clickable parts on dashboard)
+   ============================================================ */
+.movement-coral,
+.sleep-coral,
+.sport-coral {
+	all: unset;
+	position: absolute;
+	display: inline-block;
+
+	cursor: pointer;
+	pointer-events: auto;
+
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+}
+
+/* ============================================================
+   OVERALL SCORE DETAIL OVERLAY (Full screen blur)
+   ============================================================ */
+.overall-detail-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.overall-detail-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+/* Shared blur overlay panel style */
+.overall-detail-panel {
+	position: absolute;
+	inset: 0;
+	padding: 1rem 1.25rem;
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+
+	color: var(--color-white);
+	box-sizing: border-box;
+	overflow-y: auto;
+}
+
+/* Sticky header for overlays */
+.overall-detail-header {
+	position: sticky;
+	top: 0;
+	padding-top: calc(env(safe-area-inset-top, 0));
+	padding-bottom: 0.5rem;
+	z-index: 2;
+}
+
+.overall-detail-back {
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 3rem;
+	cursor: pointer;
+	line-height: 1;
+}
+
+.overall-detail-title {
+	text-align: center;
+	font-size: 1.3rem;
+	font-weight: 600;
+	margin: 0.25rem 0 0.75rem;
+}
+
+.overall-detail-subtitle {
+	text-align: center;
+	font-size: 0.95rem;
+	font-weight: 300;
+	opacity: 0.95;
+	line-height: 1.35;
+	margin: 0 0 2.5rem;
+}
+
+.overall-detail-content {
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+}
+
+.overall-detail-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.25rem;
+	width: 100%;
+}
+
+.overall-detail-ring {
+	position: relative;
+	width: 72px;
+	height: 72px;
+	flex-shrink: 0;
+}
+
+.overall-detail-ring svg {
+	position: absolute;
+	inset: 0;
+}
+
+.overall-detail-percent {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.overall-detail-text h2 {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+.overall-detail-text p {
+	margin: 0.4rem 0 0;
+	font-size: 0.85rem;
+	font-weight: 300;
+	line-height: 1.4;
+	opacity: 0.9;
+	max-width: 320px;
+}
+
+/* ============================= */
+/* Sea Life Detail Overlay Content */
+/* ============================= */
+
+.sea-life-overlay {
+	width: min(90vw, 380px);
+	margin: 0 auto;
+	padding: 0.5rem 1.25rem 2rem;
+
+	color: white;
+	font-weight: 300;
+	line-height: 1.5;
+
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.intro,
+.outro {
+	font-size: 0.95rem;
+	opacity: 0.95;
+	margin-bottom: 1.25rem;
+}
+
+/* Each sea-life row layout (icon + text content) */
+.fish-row {
+	display: grid;
+	grid-template-columns: 64px 1fr;
+	gap: 0.9rem;
+
+	align-items: start;
+	margin-bottom: 1.3rem;
+}
+
+.fish-icon {
+	width: 52px;
+	height: auto;
+	object-fit: contain;
+	justify-content: center;
+	filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+}
+
+.fish-content {
+	display: grid;
+	grid-template-columns: 1fr auto; /* title on left, progress on right */
+	column-gap: 0.75rem;
+	row-gap: 0.25rem;
+	align-items: start;
+}
+
+.fish-title {
+	grid-column: 1;
+	margin: 0;
+	padding: 0;
+	line-height: 1.2;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+/* Progress indicator positioned near the icon */
+.fish-progress {
+	grid-column: 2;
+	align-self: start;
+
+	font-size: 0.9rem;
+	font-weight: 500;
+	opacity: 0.85;
+
+	margin: 0;
+}
+
+.fish-text {
+	grid-column: 1 / -1;
+	margin: 0;
+	font-size: 0.9rem;
+	opacity: 0.85;
+}
+
+/* ============================================================
+   MOVEMENT CORAL (ANCHOR)
+   ============================================================ */
+.movement-coral {
+	bottom: 45vh;
+	left: -2vw;
+	width: min(60vw, 420px);
+	z-index: 10;
+}
+
+.movement-coral-image,
+.sleep-coral-image,
+.sport-coral-image {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================================================
+   SLEEP CORAL (ANCHOR)
+   ============================================================ */
+.sleep-coral {
+	bottom: 27vh;
+	right: -12vw;
+	width: min(80vw, 420px);
+	z-index: 10;
+}
+
+/* ============================================================
+   WORKOUT CORAL (ANCHOR)
+   ============================================================ */
+.sport-coral {
+	bottom: 13vh;
+	left: 20%;
+	width: min(45vw, 420px);
+	z-index: 2;
+}
+
+/* Decorative "plumes" */
+.workout-plume {
+	position: absolute;
+	width: min(20vw, 90px);
+	height: auto;
+
+	z-index: 4;
+	pointer-events: none;
+	filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+}
+
+/* Plume positioning helpers */
+.plume-0 {
+	top: 40%;
+	left: -10%;
+}
+.plume-1 {
+	top: 15%;
+	left: 0%;
+}
+.plume-2 {
+	top: 25%;
+	left: 25%;
+}
+.plume-3 {
+	top: -10%;
+	left: 20%;
+}
+.plume-4 {
+	top: 5%;
+	left: 45%;
+}
+.plume-5 {
+	top: 47%;
+	left: 40%;
+}
+.plume-6 {
+	top: 28%;
+	left: 65%;
+}
+
+/* ============================= */
+/* Fish School (Steps Animation) */
+/* ============================= */
+
+.fish-school {
+	position: absolute;
+	bottom: 55vh;
+	left: 0;
+
+	display: flex;
+	align-items: center;
+
+	/* fish are clickable via the parent button, not individually */
+	pointer-events: none;
+
+	z-index: 4;
+}
+
+.fish {
+	width: 90px;
+	height: auto;
+
+	transform: translateX(var(--offset-x)) translateY(var(--offset-y));
+
+	animation: fish-tail 1.8s ease-in-out infinite;
+	animation-delay: var(--delay);
+}
+
+@keyframes fish-tail {
+	0%,
+	100% {
+		transform: translateX(var(--offset-x)) translateY(var(--offset-y)) rotate(0deg);
+	}
+
+	50% {
+		transform: translateX(calc(var(--offset-x) + 6px)) translateY(var(--offset-y)) rotate(2deg);
+	}
+}
+
+/* ============================= */
+/* Fish School (Workout Animation) */
+/* ============================= */
+
+/* Workout fish are placed lower and rendered above some scene layers */
+.fish-school.workout {
+	bottom: 20vh; /* lower than step fish */
+	z-index: 11;
+}
+
+/* Workout fish are smaller */
+.fish-school.workout .fish {
+	width: 60px;
+}
+
+/* Workout fish have a slightly faster tail wiggle */
+.fish-school.workout .fish {
+	animation-duration: 1.6s;
+}
+
+/* ============================= */
+/* Fish (Sleep Animation) */
+/* ============================= */
+
+/* Sleep fish swims higher in the scene (calmer water area) */
+.fish-sleep {
+	position: absolute;
+	bottom: 80vh; /* higher, calm water */
+	left: 0;
+
+	pointer-events: none;
+	z-index: 2; /* slightly behind step fish */
+}
+
+/* Sleep fish is bigger and has a calmer animation */
+.fish-sleep .fish {
+	width: 120px;
+	height: auto;
+
+	transform: translateY(var(--offset-y));
+	animation: sleep-tail 2.4s ease-in-out infinite;
+}
+
+/* Gentle sleep-tail movement */
+@keyframes sleep-tail {
+	0%,
+	100% {
+		transform: translateY(var(--offset-y)) rotate(0deg);
+	}
+
+	50% {
+		transform: translateY(var(--offset-y)) rotate(1.5deg);
+	}
+}
+
+/* ============================= */
+/* Turtle (Bonus Sea Life) */
+/* ============================= */
+
+/* Turtle swims near the seabed */
+.turtle {
+	position: absolute;
+	bottom: 18vh; /* near seabed */
+	left: 0;
+
+	pointer-events: none;
+	z-index: 12; /* behind fish, in front of background */
+}
+
+/* Turtle image floats + flaps gently */
+.turtle-img {
+	width: 72px;
+	height: auto;
+
+	transform: translateY(var(--float));
+	animation: turtle-flap 3.8s ease-in-out infinite;
+}
+
+/* Slow calm rotation/flap motion */
+@keyframes turtle-flap {
+	0%,
+	100% {
+		transform: translateY(var(--float)) rotate(0deg);
+	}
+
+	50% {
+		transform: translateY(var(--float)) rotate(1deg);
+	}
+}
+
+/* ============================================================
+   MOVEMENT / SLEEP / WORKOUT OVERLAYS (Shared Styles)
+   ============================================================ */
+.movement-overlay,
+.sleep-overlay,
+.workout-overlay {
+	position: relative;
+	min-height: 100%;
+	color: var(--color-white);
+	padding-bottom: 8rem;
+}
+
+/* Scrollable info panel (shared across all coral overlays) */
+.movement-info-scroll,
+.sleep-info-scroll,
+.workout-info-scroll {
+	position: fixed;
+	top: calc(env(safe-area-inset-top, 5rem));
+
+	width: var(--content-width);
+	max-height: calc(100vh - 12rem);
+
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+
+	padding: 1.5rem 1.5rem 4rem;
+	z-index: 4;
+}
+
+/* Text blocks */
+.movement-text,
+.sleep-text,
+.workout-text {
+	max-width: 320px;
+	margin: 4rem auto 2rem;
+	font-weight: 300;
+	line-height: 1.6;
+}
+
+/* Stat cards */
+.movement-stats,
+.sleep-stats,
+.workout-stats {
+	margin: 2rem auto;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+
+	background: var(--glass-bg-light);
+	color: var(--color-accent-teal);
+	border-radius: var(--radius-small);
+
+	padding: 1rem 1.25rem;
+	width: min(90%, 360px);
+}
+
+.movement-stats .divider,
+.sleep-stats .divider,
+.workout-stats .divider {
+	width: 1px;
+	height: 32px;
+	background: rgba(0, 0, 0, 0.1);
+}
+
+/* Charts */
+.movement-chart,
+.sleep-chart {
+	margin: 2rem auto 1rem;
+	width: var(--content-width);
+}
+
+/* Toggle graph button */
+.graph-toggle {
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 1rem;
+	font-weight: 600;
+	margin: 1rem auto;
+	display: block;
+}
+
+/* Movement chart card */
+.movement-chart-card {
+	background: rgba(255, 255, 255, 0.9);
+	border-radius: var(--radius-card);
+	padding: 1rem;
+	margin: 2rem auto 0;
+	width: var(--content-width);
+}
+
+/* Overlay decorative coral */
+.movement-overlay-coral,
+.sleep-overlay-coral,
+.workout-overlay-coral {
+	position: fixed;
+	bottom: -10vh;
+	left: -10vw;
+
+	width: min(60vw, 520px);
+
+	transform: rotate(35deg);
+	opacity: 0.9;
+
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Overlay title */
+.movement-overlay-title,
+.sleep-overlay-title,
+.workout-overlay-title {
+	position: fixed;
+	left: 1rem;
+	bottom: calc(env(safe-area-inset-bottom, 1rem));
+
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: var(--color-white);
+
+	z-index: 3;
+	pointer-events: none;
+}
+
+/* Workout stat layout variation */
+.workout-stats-3row {
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.workout-stats-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+}
+
+.workout-stats-bottom {
+	width: 100%;
+	text-align: center;
+}
+
+.workout-divider {
+	border: none;
+	height: 1px;
+	background: rgba(17, 143, 168, 0.35);
+	margin: 0.5rem 0 0.75rem;
+	width: 100%;
+}
+
+/* ============================================================
+   GENERIC CORAL OVERLAY SHELL (Movement/Sleep/Workout Overlay Root)
+   ============================================================ */
+.coral-overlay-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.coral-overlay-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	pointer-events: auto;
+}
+
+.coral-overlay-panel {
+	position: absolute;
+	inset: 0;
+	pointer-events: auto;
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* Shared overlay header + back button */
+.overlay-header {
+	position: sticky;
+	top: 0;
+	padding: 1rem;
+	z-index: 1001;
+}
+
+.back-button {
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 3rem;
+	pointer-events: auto;
+	cursor: pointer;
+}
+
+/* Full-click fish overlay */
+.fish-click {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	pointer-events: auto;
+	cursor: pointer;
+}
+
+/* ============================================================
+   SETTINGS PAGE
+   ============================================================ */
+.settings-page {
+	width: 100%;
+	max-width: 100vw;
+	overflow-x: hidden;
+	box-sizing: border-box;
+
+	min-height: 100svh;
+	padding: 1rem;
+	position: relative;
+	color: var(--color-white);
+}
+
+.settings-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+
+	padding-top: calc(env(safe-area-inset-top, 0));
+	margin-top: 0.25rem;
+}
+
+.settings-back-button {
+	position: absolute;
+	left: 0.25rem;
+	top: 0;
+
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 2rem;
+	cursor: pointer;
+}
+
+.settings-title {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+	text-align: center;
+
+	max-width: 75vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.settings-status {
+	text-align: center;
+	margin-top: 3rem;
+	font-weight: 400;
+}
+
+.settings-error {
+	color: #ffd1d1;
+}
+
+/* Settings glass card */
+.settings-card {
+	max-width: 92vw;
+	box-sizing: border-box;
+
+	margin: 2rem auto 0;
+	width: min(92vw, 420px);
+
+	background: var(--glass-bg-medium);
+	border-radius: var(--radius-card);
+	padding: 1.25rem;
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+
+	color: var(--color-accent-teal);
+}
+
+.settings-card-title {
+	margin: 0 0 1rem;
+	text-align: center;
+	font-weight: 700;
+	color: var(--color-accent-teal);
+}
+
+/* Rows */
+.settings-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+
+	padding: 0.9rem 0;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.settings-row:first-of-type {
+	border-top: none;
+}
+
+.settings-label,
+.settings-value {
+	max-width: 45%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.settings-label {
+	font-weight: 600;
+}
+
+.settings-value {
+	font-weight: 500;
+}
+
+/* Logout button */
+.settings-logout {
+	position: fixed;
+	right: 2rem;
+	bottom: calc(env(safe-area-inset-bottom, 1rem) + 1.5rem);
+
+	background: none;
+	border: none;
+	color: var(--color-white);
+
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+/* ============================================================
+   HISTORY PAGE
+   ============================================================ */
+.history-page {
+	min-height: 100svh;
+	position: relative;
+
+	padding: 1rem;
+	padding-bottom: 3rem;
+	box-sizing: border-box;
+
+	color: var(--color-white);
+	overflow-x: hidden;
+
+	background: url('/background/dashboardBackground.png') center / cover no-repeat;
+}
+
+.history-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	position: relative;
+	padding-top: calc(env(safe-area-inset-top, 0));
+}
+
+.history-back {
+	position: absolute;
+	left: 0.25rem;
+	top: 0;
+
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 2.5rem;
+	cursor: pointer;
+}
+
+.history-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.history-subtitle {
+	margin-top: 0.75rem;
+	text-align: center;
+	font-size: 0.8rem;
+	font-weight: 300;
+	opacity: 0.95;
+	line-height: 1.4;
+}
+
+/* Layout */
+.history-main {
+	margin-top: 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+/* Rock area */
+.history-rock-area {
+	position: relative;
+	width: min(60vw, 240px);
+	height: 75vh;
+
+	margin-left: -1rem;
+	transform: translateY(6vh);
+
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+}
+
+.history-rock {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* Decorative corals */
+.history-coral {
+	position: absolute;
+	height: 55px;
+	width: auto;
+	pointer-events: none;
+}
+
+.coral-top {
+	top: 12%;
+	left: 12%;
+}
+
+.coral-mid {
+	top: 40%;
+	left: 8%;
+}
+
+.coral-bottom {
+	top: 68%;
+	left: 18%;
+}
+
+/* Week buttons panel */
+.history-weeks {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+
+	height: 75vh;
+	padding: 3rem 0.75rem;
+}
+
+/* Coral row for each week */
+.history-week-coral {
+	position: absolute;
+	left: 0;
+	width: 100%;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 0.5rem;
+}
+
+.week-1 {
+	top: 9%;
+}
+.week-2 {
+	top: 32%;
+}
+.week-3 {
+	top: 55%;
+}
+.week-4 {
+	top: 77%;
+}
+
+/* Week workout wrapper (for plumes positioning) */
+.history-workout-wrapper {
+	position: relative;
+	display: inline-block;
+}
+
+/* Week button style */
+.history-week-button {
+	background: var(--glass-bg-soft);
+	border: none;
+	color: var(--color-white);
+
+	padding: 0.5rem 1rem;
+	border-radius: 14px;
+
+	font-size: 0.8rem;
+	font-weight: 500;
+
+	cursor: pointer;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.history-week-button.active-week {
+	background: var(--glass-bg-soft-active);
+	font-weight: 600;
+}
+
+/* ============================================================
+   WEEK CUSTOM CORAL SIZE / POSITION OVERRIDES
+   (These are intentionally specific, so they stay per-week)
+   ============================================================ */
+
+/* WEEK 1 */
+.week1-sleep {
+	height: 150px;
+	transform: translateX(10vw) translateY(-12vh);
+	z-index: 3;
+}
+.week1-movement {
+	height: 150px;
+	transform: translateX(5vw) translateY(-13vh);
+	z-index: 2;
+}
+.week1-workout {
+	height: 80px;
+	transform: translateX(2vw) translateY(-9vh);
+	z-index: 4;
+}
+.week1-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(2vw) translateY(-8vh);
+	z-index: 5;
+}
+
+/* WEEK 2 */
+.week2-sleep {
+	height: 150px;
+	transform: translateX(35vw) translateY(-5vh);
+	z-index: 3;
+}
+.week2-movement {
+	height: 150px;
+	transform: translateX(25vw) translateY(-6vh);
+	z-index: 2;
+}
+.week2-workout {
+	height: 80px;
+	transform: translateX(20vw) translateY(-3vh);
+	z-index: 4;
+}
+.week2-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(23vw) translateY(-4vh);
+	z-index: 5;
+}
+
+/* WEEK 3 */
+.week3-sleep {
+	height: 150px;
+	transform: translateX(25vw) translateY(5vh);
+	z-index: 3;
+}
+.week3-movement {
+	height: 150px;
+	transform: translateX(20vw) translateY(4vh);
+	z-index: 2;
+}
+.week3-workout {
+	height: 80px;
+	transform: translateX(15vw) translateY(8vh);
+	z-index: 4;
+}
+.week3-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(15vw) translateY(9vh);
+	z-index: 5;
+}
+
+/* WEEK 4 */
+.week4-sleep {
+	height: 150px;
+	transform: translateX(30vw) translateY(29vh);
+	z-index: 3;
+}
+.week4-movement {
+	height: 150px;
+	transform: translateX(25vw) translateY(29vh);
+	z-index: 2;
+}
+.week4-workout {
+	height: 80px;
+	transform: translateX(12vw) translateY(28vh);
+	z-index: 4;
+}
+.week4-workout-wrapper .workout-plume {
+	height: 20px;
+	width: auto;
+	transform: translateX(12vw) translateY(28vh);
+	z-index: 5;
+}
+
+/* ============================================================
+   HISTORY DROPDOWN (Bottom selector)
+   ============================================================ */
+.history-dropdown {
+	position: relative;
+
+	margin: 10rem auto 1rem;
+	width: var(--content-width);
+
+	padding: 0.75rem 1rem;
+
+	border: none;
+	border-radius: var(--radius-small);
+
+	background: var(--glass-bg-light);
+	color: var(--color-accent-teal);
+
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-align: center;
+	cursor: pointer;
+}
+
+.history-dropdown-sub {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.7rem;
+	font-weight: 400;
+	opacity: 0.8;
+}
+
+/* ============================================================
+   MONTHLY OVERLAY (History dropdown overlay)
+   ============================================================ */
+.monthly-overlay-root {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+}
+
+.monthly-overlay-backdrop {
+	all: unset;
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+.monthly-overlay-panel {
+	position: absolute;
+	inset: 0;
+
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+
+	padding: 1rem;
+	color: var(--color-white);
+	box-sizing: border-box;
+}
+
+.monthly-overlay-back {
+	background: none;
+	border: none;
+	color: var(--color-white);
+	font-size: 2.5rem;
+	cursor: pointer;
+}
+
+.monthly-overlay-title {
+	position: absolute;
+	top: calc(env(safe-area-inset-top, 0) + 1rem);
+	left: 50%;
+	transform: translateX(-50%);
+
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.monthly-overlay-intro {
+	margin-top: 5rem;
+	text-align: center;
+
+	font-weight: 300;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	opacity: 0.95;
+}
+
+.monthly-overlay-content {
+	margin-top: 2.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+	align-items: center;
+}
+
+.monthly-overlay-row {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	width: var(--content-width);
+}
+
+.monthly-overlay-coral {
+	width: 95px;
+	height: auto;
+	transform: rotate(35deg) scale(1.5) translateX(-10vw);
+	flex-shrink: 0;
+}
+
+.monthly-overlay-text h2 {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.monthly-overlay-text p {
+	margin: 0.4rem 0 0;
+	font-size: 0.8rem;
+	font-weight: 300;
+	line-height: 1.4;
+	opacity: 0.9;
+}
+
+.monthly-overlay-footer {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: calc(env(safe-area-inset-bottom, 0) + 1.5rem);
+
+	text-align: center;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.4;
+
+	width: var(--content-width);
+}

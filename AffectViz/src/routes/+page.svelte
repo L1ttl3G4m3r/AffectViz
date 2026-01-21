@@ -1,2 +1,10 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script>
+    function login() {
+        window.location.href = '/login';
+    }
+</script>
+
+<div class="login-container">
+    <h1>Log in to see how your reef is doing today</h1>
+    <button on:click={login}>Log in</button>
+</div>
