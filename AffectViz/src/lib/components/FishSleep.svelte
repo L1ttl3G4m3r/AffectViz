@@ -1,15 +1,17 @@
 <script>
 	import { onMount } from 'svelte';
 
+	/* Sleep data (contains sleepDuration string like "7h 30m") */
 	export let sleepData = null;
-    export let onOpen = () => {};
 
-	/* ---------------------------------------
-	   CHECK IF LAST NIGHT ≥ 7 HOURS
-	--------------------------------------- */
+	/* Callback when user taps/clicks the sleep fish */
+	export let onOpen = () => {};
+
+	/* Show the sleep fish only if the user slept at least 7 hours. */
 	function hasEnoughSleep(duration) {
 		if (!duration || typeof duration !== 'string') return false;
 
+		/* Extract number before "h" */
 		const match = duration.match(/(\d+)h/);
 		if (!match) return false;
 
@@ -17,84 +19,96 @@
 		return hours >= 7;
 	}
 
+	/* Reactive flag: should the fish appear? */
 	$: showFish = hasEnoughSleep(sleepData?.sleepDuration);
 
-	let x = -160;
+	/* Swimming animation state */
+	const OFFSCREEN_PADDING = 160;
+
+	/* Horizontal position of the sleep fish */
+	let x = -OFFSCREEN_PADDING;
+
+	/* 1 = right, -1 = left */
 	let direction = 1;
-	let speed = 0.25; // slower = calmer sleep fish
+
+	/* Slower speed = calmer swim vibe */
+	let speed = 0.25;
+
+	/* Used for boundary checks */
 	let screenWidth = 0;
+
+	/* Used for gentle vertical floating (sin wave) */
 	let t = 0;
+
+	let frameId;
 
 	onMount(() => {
 		screenWidth = window.innerWidth;
 
+		/* Keep screenWidth correct on resize/rotation */
+		const handleResize = () => {
+			screenWidth = window.innerWidth;
+		};
+
+		window.addEventListener('resize', handleResize);
+
+		/* requestAnimationFrame movement loop */
 		const loop = () => {
 			x += speed * direction;
 			t += 0.015;
 
-			if (direction === 1 && x > screenWidth + 160) {
+			/* Exit right side → flip to left */
+			if (direction === 1 && x > screenWidth + OFFSCREEN_PADDING) {
 				direction = -1;
-				x = screenWidth + 160;
+				x = screenWidth + OFFSCREEN_PADDING;
 			}
 
-			if (direction === -1 && x < -160) {
+			/* Exit left side → flip to right */
+			if (direction === -1 && x < -OFFSCREEN_PADDING) {
 				direction = 1;
-				x = -160;
+				x = -OFFSCREEN_PADDING;
 			}
 
-			requestAnimationFrame(loop);
+			frameId = requestAnimationFrame(loop);
 		};
 
 		loop();
+
+		/* Cleanup on destroy */
+		return () => {
+			window.removeEventListener('resize', handleResize);
+			cancelAnimationFrame(frameId);
+		};
 	});
 </script>
 
 {#if showFish}
-    <button
-		type="button"
-		class="fish-click"
-		aria-label="Open sea life details"
-		on:click={onOpen}
-	>
-        <div
-            class="fish-sleep"
-            style="transform: translateX({x}px) scaleX({direction});"
-        >
-            <img
-                src="/fish/fish-sleep.png"
-                alt=""
-                class="fish"
-                style="--offset-y: {Math.sin(t) * 2}px;"
-            />
-        </div>
-    </button>
+	<!--
+		This button makes the fish clickable.
+		The fish container itself has pointer-events: none,
+		so the click is handled by the button.
+	-->
+	<button type="button" class="fish-click" aria-label="Open sea life details" on:click={onOpen}>
+		<!--
+			fish-sleep is styled globally in app.css:
+			- placed high in the scene
+			- calmer animation vibe
+
+			transform:
+			- translateX(x) = horizontal movement
+			- scaleX(direction) = flip based on direction
+		-->
+		<div class="fish-sleep" style="transform: translateX({x}px) scaleX({direction});">
+			<!--
+				Single sleep fish:
+				--offset-y adds gentle floating motion using sin(t)
+			-->
+			<img
+				class="fish"
+				src="/fish/fish-sleep.png"
+				alt=""
+				style="--offset-y: {Math.sin(t) * 2}px;"
+			/>
+		</div>
+	</button>
 {/if}
-
-<style>
-	.fish-sleep {
-		position: absolute;
-		bottom: 80vh; /* higher, calm water */
-		left: 0;
-
-		pointer-events: none;
-		z-index: 2; /* slightly behind step fish */
-	}
-
-	.fish {
-		width: 120px;
-		height: auto;
-
-		transform: translateY(var(--offset-y));
-
-		animation: sleep-tail 2.4s ease-in-out infinite;
-	}
-
-	@keyframes sleep-tail {
-		0%, 100% {
-			transform: translateY(var(--offset-y)) rotate(0deg);
-		}
-		50% {
-			transform: translateY(var(--offset-y)) rotate(1.5deg);
-		}
-	}
-</style>

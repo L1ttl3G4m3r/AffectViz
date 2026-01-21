@@ -1,28 +1,53 @@
 <script>
+	/* Controls visibility of the overlay */
 	export let open = false;
+
+	/* Month name displayed in the title */
 	export let monthName = 'January';
+
+	/* Callback that closes the overlay (parent controls state) */
 	export let onClose = () => {};
 </script>
 
 {#if open}
+	<!-- Root container for the monthly history overlay (fullscreen layer) -->
 	<div class="monthly-overlay-root">
-		<!-- click outside to close -->
-		<button class="monthly-overlay-backdrop" aria-label="Close overlay" on:click={onClose}></button>
+		<!--
+			Backdrop:
+			Clicking outside the panel closes the overlay.
+			Button is used for accessibility + keyboard support.
+		-->
+		<button
+			type="button"
+			class="monthly-overlay-backdrop"
+			aria-label="Close overlay"
+			on:click={onClose}
+		></button>
 
+		<!--
+			Main panel:
+			role="dialog" + aria-modal makes this a proper modal overlay.
+		-->
 		<div class="monthly-overlay-panel" role="dialog" aria-modal="true">
-			<!-- Back button -->
-			<button class="monthly-overlay-back" on:click={onClose} aria-label="Back"> ← </button>
+			<!-- Header area: Back button + title -->
+			<header>
+				<button type="button" class="monthly-overlay-back" on:click={onClose} aria-label="Back">
+					←
+				</button>
 
-			<h1 class="monthly-overlay-title">History - {monthName}</h1>
+				<h1 class="monthly-overlay-title">History - {monthName}</h1>
+			</header>
 
+			<!-- Short intro text -->
 			<p class="monthly-overlay-intro">
 				Over the past month, your daily choices <br />
 				slowly shaped your reef.
 			</p>
 
-			<div class="monthly-overlay-content">
+			<!-- Main content: summary rows -->
+			<main class="monthly-overlay-content">
 				<!-- Sleep -->
-				<div class="monthly-overlay-row">
+				<article class="monthly-overlay-row">
 					<img class="monthly-overlay-coral" src="/coralSleep/sleep-13.png" alt="Sleep coral" />
 
 					<div class="monthly-overlay-text">
@@ -33,10 +58,10 @@
 							of the month.
 						</p>
 					</div>
-				</div>
+				</article>
 
 				<!-- Training -->
-				<div class="monthly-overlay-row">
+				<article class="monthly-overlay-row">
 					<img
 						class="monthly-overlay-coral"
 						src="/background/sportCoral.png"
@@ -51,10 +76,10 @@
 							Keep up the good work!
 						</p>
 					</div>
-				</div>
+				</article>
 
 				<!-- Movement -->
-				<div class="monthly-overlay-row">
+				<article class="monthly-overlay-row">
 					<img
 						class="monthly-overlay-coral"
 						src="/coralMovement/movement-13.png"
@@ -68,13 +93,16 @@
 							growth in this month.
 						</p>
 					</div>
-				</div>
-			</div>
+				</article>
+			</main>
 
-			<p class="monthly-overlay-footer">
-				Keep up the good work and help your<br />
-				reef grow even more beautiful
-			</p>
+			<!-- Footer message -->
+			<footer>
+				<p class="monthly-overlay-footer">
+					Keep up the good work and help your<br />
+					reef grow even more beautiful
+				</p>
+			</footer>
 		</div>
 	</div>
 {/if}

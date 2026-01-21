@@ -5,23 +5,36 @@
 
 	export let data;
 
+	/* Tier decides which explanation text is shown */
 	let tier = 'low';
+
+	/* Controls whether the chart area is visible */
 	let chartOpen = false;
+
+	/* Reference to the chart container element */
 	let chartEl;
+
+	/* Lazy-loaded D3 module */
 	let d3;
 
-	/* ✅ SAFE: reactively derive tier */
+	/*
+		data.growth is expected between 0 and 1.
+		We convert to percentage for scoreTier().
+	*/
 	$: if (data?.growth != null) {
 		tier = scoreTier(data.growth * 100);
 	}
 
-	/* ✅ Lazy-load D3 ONLY when needed */
+	/* Chart toggle (Lazy-load D3 only when needed) */
 	async function toggleChart() {
 		chartOpen = !chartOpen;
 
+		/* Only render when opening */
 		if (chartOpen) {
+			/* Wait for the DOM element to exist */
 			await tick();
 
+			/* Import D3 only once */
 			if (!d3) {
 				d3 = await import('d3');
 			}
@@ -30,10 +43,19 @@
 		}
 	}
 
+	/* ------------------------------------------------------------
+	   D3 DONUT CHART RENDERING
+	   ------------------------------------------------------------ */
 	function renderChart() {
-		if (!chartEl || chartEl.hasChildNodes()) return;
+		/* Safety checks */
+		if (!chartEl) return;
+		if (chartEl.hasChildNodes()) return;
 		if (!data || !d3) return;
 
+		/*
+			Build sleep stage dataset.
+			We only keep stages with a value > 0 so chart stays clean.
+		*/
 		const stages = [
 			{ label: 'DEEP', value: data.deepSleep ?? 0 },
 			{ label: 'REM', value: data.remSleep ?? 0 },
@@ -41,30 +63,31 @@
 			{ label: 'AWAKE', value: data.awake ?? 0 }
 		].filter((d) => d.value > 0);
 
+		/* Chart sizing */
 		const width = chartEl.clientWidth || 320;
 		const height = 260;
 
+		/* Donut radius */
 		const radius = Math.min(width, height) / 2 - 10;
 
-		// ✅ Create svg
-		const svgRoot = d3
-			.select(chartEl)
-			.append('svg')
-			.attr('width', width)
-			.attr('height', height);
+		/* Total sleep sum for percentages */
+		const total = stages.reduce((sum, d) => sum + d.value, 0);
 
-		const svg = svgRoot
-			.append('g')
-			.attr('transform', `translate(${width / 2}, ${height / 2})`);
+		/* Create SVG root element */
+		const svgRoot = d3.select(chartEl).append('svg').attr('width', width).attr('height', height);
 
-		// ✅ Circular background (behind donut)
-		svg.append('circle')
+		/* Centered group for donut chart */
+		const svg = svgRoot.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+		/* BACKGROUND CIRCLE */
+		svg
+			.append('circle')
 			.attr('r', radius)
 			.attr('fill', 'rgba(255,255,255,0.92)')
 			.attr('stroke', 'rgba(255,255,255,0.65)')
 			.attr('stroke-width', 2);
 
-		// ✅ Colors
+		/* COLORS (Deep -> Awake) */
 		const color = d3
 			.scaleOrdinal()
 			.domain(stages.map((d) => d.label))
@@ -75,29 +98,29 @@
 				'rgba(17, 139, 168, 0.25)' // Awake
 			]);
 
-		const total = stages.reduce((sum, d) => sum + d.value, 0);
-
+		/* PIE / ARC GEOMETRY */
+		/* Convert values into angles */
 		const pie = d3
 			.pie()
 			.value((d) => d.value)
 			.sort(null);
-
 		const arcs = pie(stages);
 
-		// ✅ Thicker donut (smaller hole)
+		/* Donut thickness */
 		const arc = d3
 			.arc()
 			.innerRadius(radius * 0.28)
 			.outerRadius(radius * 0.92);
 
-		// ✅ label sits in the middle of the slice thickness
+		/* Label position: center of slice thickness */
 		const labelArc = d3
 			.arc()
 			.innerRadius(radius * 0.62)
 			.outerRadius(radius * 0.62);
 
-		// Donut slices
-		svg.selectAll('path')
+		/* DONUT SLICES */
+		svg
+			.selectAll('path')
 			.data(arcs)
 			.enter()
 			.append('path')
@@ -106,7 +129,7 @@
 			.attr('stroke', 'rgba(255,255,255,0.25)')
 			.attr('stroke-width', 2);
 
-		// ✅ Text group inside slices (label + percentage)
+		/* LABELS (Stage + Percentage) */
 		const labels = svg
 			.selectAll('.slice-label')
 			.data(arcs)
@@ -118,6 +141,7 @@
 				return `translate(${x}, ${y})`;
 			});
 
+		/* Stage label */
 		labels
 			.append('text')
 			.attr('text-anchor', 'middle')
@@ -127,6 +151,7 @@
 			.style('font-weight', '700')
 			.text((d) => d.data.label);
 
+		/* Percentage label */
 		labels
 			.append('text')
 			.attr('text-anchor', 'middle')
@@ -141,45 +166,53 @@
 	}
 </script>
 
+<!-- Sleep overlay screen -->
 <section class="sleep-overlay">
-	<div class="sleep-info-scroll">
-		<div class="sleep-text">
+	<!-- Scroll container -->
+	<main class="sleep-info-scroll">
+		<!-- Tier-based explanation text -->
+		<section class="sleep-text">
 			{#each sleepConfig.tiers[tier].text as paragraph}
 				<p>{paragraph}</p>
 			{/each}
-		</div>
+		</section>
 
-		<div class="sleep-stats">
+		<!-- Summary stats card -->
+		<section class="sleep-stats">
 			<div>
 				<strong>Sleep</strong>
 				<span>{data?.sleepDuration ?? '-'}</span>
 			</div>
 
-			<div class="divider"></div>
+			<hr class="divider" />
 
 			<div>
 				<strong>Quality</strong>
 				<span>{data?.sleepScore ?? '–'}</span>
 			</div>
-		</div>
+		</section>
 
-		<button class="graph-toggle" on:click={toggleChart}>
+		<!-- Chart toggle -->
+		<button
+			type="button"
+			class="graph-toggle"
+			aria-expanded={chartOpen}
+			aria-controls="sleep-chart"
+			on:click={toggleChart}
+		>
 			Look at all sleep stats
 			<span class:open={chartOpen}>⌄</span>
 		</button>
 
+		<!-- Donut chart container -->
 		{#if chartOpen}
-			<div class="sleep-chart" bind:this={chartEl}></div>
+			<figure id="sleep-chart" class="sleep-chart" bind:this={chartEl}></figure>
 		{/if}
-	</div>
+	</main>
 
-	<img
-		src="/coralSleep/sleep-13.png"
-		alt=""
-		class="sleep-overlay-coral"
-	/>
+	<!-- Decorative coral image -->
+	<img src="/coralSleep/sleep-13.png" alt="" class="sleep-overlay-coral" />
 
-	<h1 class="sleep-overlay-title">
-		{sleepConfig.title}
-	</h1>
+	<!-- Screen title -->
+	<h1 class="sleep-overlay-title">{sleepConfig.title}</h1>
 </section>

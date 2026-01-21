@@ -23,13 +23,15 @@
 		}
 	});
 
+	/* "1985-09-06" → "06-09-1985" */
 	function formatBirthdate(dateStr) {
 		if (!dateStr) return '-';
-		// "1985-09-06" -> "06-09-1985"
+
 		const [yyyy, mm, dd] = dateStr.split('-');
 		return `${dd}-${mm}-${yyyy}`;
 	}
 
+	/* "MALE" → "Male" */
 	function prettyGender(g) {
 		if (!g) return '-';
 		return g.charAt(0) + g.slice(1).toLowerCase();
@@ -40,10 +42,16 @@
 	}
 </script>
 
-<div class="settings-page">
-	<!-- Header -->
-	<div class="settings-header">
-		<button class="settings-back-button" on:click={() => goto('/dashboard')} aria-label="Back">
+<!-- Settings page wrapper -->
+<main class="settings-page">
+	<!-- Page header -->
+	<header class="settings-header">
+		<button
+			type="button"
+			class="settings-back-button"
+			on:click={() => goto('/dashboard')}
+			aria-label="Back"
+		>
 			←
 		</button>
 
@@ -54,45 +62,50 @@
 				Settings
 			{/if}
 		</h1>
-	</div>
+	</header>
 
+	<!-- Loading / error / content states -->
 	{#if loading}
 		<p class="settings-status">Loading...</p>
 	{:else if error}
 		<p class="settings-status settings-error">{error}</p>
 	{:else}
-		<!-- Card -->
-		<div class="settings-card">
+		<!-- User info card -->
+		<section class="settings-card" aria-label="Personal information">
 			<h2 class="settings-card-title">Personal information</h2>
 
-			<div class="settings-row">
-				<span class="settings-label">Birthdate</span>
-				<span class="settings-value">{formatBirthdate(user.birthdate)}</span>
-			</div>
+			<!--
+				Definition list is semantic for "Label → Value" rows.
+				Classes stay identical, so your CSS keeps working.
+			-->
+			<dl>
+				<div class="settings-row">
+					<dt class="settings-label">Birthdate</dt>
+					<dd class="settings-value">{formatBirthdate(user.birthdate)}</dd>
+				</div>
 
-			<div class="settings-row">
-				<span class="settings-label">Gender</span>
-				<span class="settings-value">{prettyGender(user.gender)}</span>
-			</div>
+				<div class="settings-row">
+					<dt class="settings-label">Gender</dt>
+					<dd class="settings-value">{prettyGender(user.gender)}</dd>
+				</div>
 
-			<div class="settings-row">
-				<span class="settings-label">Weight</span>
-				<span class="settings-value">
-					{user.weight ? `${user.weight} kg` : '-'}
-				</span>
-			</div>
+				<div class="settings-row">
+					<dt class="settings-label">Weight</dt>
+					<dd class="settings-value">
+						{user.weight ? `${user.weight} kg` : '-'}
+					</dd>
+				</div>
 
-			<div class="settings-row">
-				<span class="settings-label">Height</span>
-				<span class="settings-value">
-					{user.height ? `${user.height} cm` : '-'}
-				</span>
-			</div>
-		</div>
+				<div class="settings-row">
+					<dt class="settings-label">Height</dt>
+					<dd class="settings-value">
+						{user.height ? `${user.height} cm` : '-'}
+					</dd>
+				</div>
+			</dl>
+		</section>
 
-		<!-- Logout -->
-		<button class="settings-logout" on:click={logout}>
-			Log out →
-		</button>
+		<!-- Logout button -->
+		<button type="button" class="settings-logout" on:click={logout}> Log out → </button>
 	{/if}
-</div>
+</main>
