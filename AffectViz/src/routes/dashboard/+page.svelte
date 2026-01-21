@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 
 	/* ================= Overlay ================= */
-
 	import CoralOverlay from '$lib/components/CoralOverlay.svelte';
 	import MovementCoralDetail from '$lib/corals/movement/MovementCoralDetail.svelte';
 	import SleepCoralDetail from '$lib/corals/sleep/SleepCoralDetail.svelte';
@@ -23,7 +22,6 @@
 	let activeOverallOverlay = false;
 
 	/* ================= Water animation ================= */
-
 	let canvas;
 	let ctx;
 	let t = 0;
@@ -73,13 +71,11 @@
 	}
 
 	/* ================= Scores ================= */
-
 	let overallScore = null;
 	let sleepScore = 0;
 	let cardioScore = 0;
 
 	/* ================= Coral State ================= */
-
 	let movementState = 0;
 	const MOVEMENT_STATES = 14;
 
@@ -89,7 +85,6 @@
 	let workoutPlumes = Array.from({ length: 7 }, () => ({ visible: false }));
 
 	/* ================= SVG math ================= */
-
 	const circumference = (r) => 2 * Math.PI * r;
 	const dashOffset = (score, r) => circumference(r) * (1 - score / 100);
 
@@ -102,7 +97,6 @@
 	}
 
 	/* ================= Mount ================= */
-
 	onMount(async () => {
 		ctx = canvas.getContext('2d');
 		resize();
@@ -124,21 +118,21 @@
 		const movementGrowth = movementData?.growth ?? 0;
 		movementState = Math.min(MOVEMENT_STATES - 1, Math.floor(movementGrowth * MOVEMENT_STATES));
 
-		/* ---------- Sleep coral (❗ FIXED) ---------- */
+		/* ---------- Sleep coral ---------- */
 		const sleepRes = await fetch('/api/sleep-coral', { credentials: 'include' });
 		sleepData = await sleepRes.json();
 
 		const sleepGrowth = sleepData?.growth ?? 0;
 		sleepState = Math.min(SLEEP_STATES - 1, Math.floor(sleepGrowth * SLEEP_STATES));
 
-		/* ---------- Workout coral (❗ FIXED & SAFE) ---------- */
+		/* ---------- Workout coral ---------- */
 		const workoutRes = await fetch('/api/workout-coral', { credentials: 'include' });
 		const workoutJson = await workoutRes.json();
 
-		// data for overlay
+		/* data for overlay */
 		workoutData = workoutJson;
 
-		// visual plumes (keep separate!)
+		/* visual plumes (keep separate!) */
 		workoutPlumes = (workoutJson?.plumes ?? []).map((v) =>
 			typeof v === 'object' ? v : { visible: Boolean(v) }
 		);
@@ -252,7 +246,7 @@
 		<img src={`/coralMovement/movement-${movementState}.png`} alt="" class="movement-coral-image" />
 	</button>
 
-	<!-- Sleep coral (reuses movement overlay for now) -->
+	<!-- Sleep coral -->
 	<button
 		type="button"
 		class="sleep-coral"
