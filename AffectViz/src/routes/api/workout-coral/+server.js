@@ -1,9 +1,14 @@
 import { json } from '@sveltejs/kit';
 import { polarFetch } from '$lib/server/polar.js';
 
-/* -------------------------------------------------
-   ISO-8601 Duration → Minutes
--------------------------------------------------- */
+const NL_TIMEZONE = 'Europe/Amsterdam';
+const DAYS_PER_WEEK = 7;
+const DAILY_GOAL_MINUTES = 60;
+
+/*
+ 	Convert ISO-8601 duration string to minutes.
+ 	Example: "PT1H30M" -> 90
+ */
 function durationToMinutes(duration) {
 	if (!duration || typeof duration !== 'string') return 0;
 
@@ -17,68 +22,72 @@ function durationToMinutes(duration) {
 	return hours * 60 + minutes + seconds / 60;
 }
 
-/* -------------------------------------------------
-   Convert date to NL-local YYYY-MM-DD
--------------------------------------------------- */
-function toNLDate(date) {
-	return new Date(date).toLocaleDateString('en-CA', {
-		timeZone: 'Europe/Amsterdam'
-	});
+/* Convert a Date into a NL-local YYYY-MM-DD string. */
+function toNLDateKey(date) {
+	return new Date(date).toLocaleDateString('en-CA', { timeZone: NL_TIMEZONE });
 }
 
-/* -------------------------------------------------
-   Get Monday of current week (NL timezone)
--------------------------------------------------- */
-function getMondayNL() {
-	const now = new Date(
-		new Date().toLocaleString('en-US', {
-			timeZone: 'Europe/Amsterdam'
-		})
-	);
+/* Get "now" in NL timezone (important for weekly calculations). */
+function getNowInNL() {
+	return new Date(new Date().toLocaleString('en-US', { timeZone: NL_TIMEZONE }));
+}
 
-	const day = now.getDay();
-	const diff = day === 0 ? -6 : 1 - day;
+/* Get Monday 00:00 of the current week (NL timezone). */
+function getMondayStartInNL() {
+	const now = getNowInNL();
 
-	now.setDate(now.getDate() + diff);
+	/* JS: 0 = Sunday, 1 = Monday, ... */
+	const dayOfWeek = now.getDay();
+	const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+	now.setDate(now.getDate() + diffToMonday);
 	now.setHours(0, 0, 0, 0);
 
 	return now;
 }
 
-/* -------------------------------------------------
-   GET handler
--------------------------------------------------- */
+/* Normalize Polar exercise API response into an array. */
+function normalizeExercises(apiResponse) {
+	if (Array.isArray(apiResponse)) return apiResponse;
+	return apiResponse?.exercises ?? [];
+}
+
 export async function GET({ cookies }) {
 	try {
+		/* Fetch exercise list from Polar */
 		const response = await polarFetch('exercises', cookies);
-		const exercises = Array.isArray(response) ? response : (response?.exercises ?? []);
+		const exercises = normalizeExercises(response);
 
+		/* Total workout minutes per day (for the weekly plume visibility) */
 		const minutesPerDay = {};
 
-		/* 🔹 ADD: today aggregates */
-		const todayKey = toNLDate(new Date());
+		/* Today-only totals (for the workout overlay stats) */
+		const todayKey = toNLDateKey(new Date());
 		let workoutCalories = 0;
 		let workoutDurationMinutes = 0;
 
+		/* Weighted average heart rate calculation */
 		let heartRateMinutesSum = 0;
 		let heartRateWeightedSum = 0;
 
+		/* Parse exercise data */
 		for (const ex of exercises) {
 			if (!ex?.start_time || !ex?.duration) continue;
 
-			const dateKey = toNLDate(ex.start_time);
+			const dateKey = toNLDateKey(ex.start_time);
 			const minutes = durationToMinutes(ex.duration);
 
-			// existing logic
+			/* Weekly total per day (existing logic) */
 			minutesPerDay[dateKey] = (minutesPerDay[dateKey] ?? 0) + minutes;
 
-			/* 🔹 ADD: today only */
+			/* Today totals only */
 			if (dateKey === todayKey) {
 				workoutDurationMinutes += minutes;
 				workoutCalories += ex.calories ?? 0;
 
 				const avgHr = ex?.heart_rate?.average;
-				
+
+				/* Weighted average: (avgHr * minutes) / totalMinutes */
 				if (typeof avgHr === 'number' && avgHr > 0) {
 					heartRateMinutesSum += minutes;
 					heartRateWeightedSum += avgHr * minutes;
@@ -86,43 +95,50 @@ export async function GET({ cookies }) {
 			}
 		}
 
-		const DAILY_GOAL_MINUTES = 60;
-		const monday = getMondayNL();
-
+		/* ========================================================
+		   Build weekly plume list (Mon–Sun)
+		   ======================================================== */
+		const monday = getMondayStartInNL();
 		const plumes = [];
 
-		for (let i = 0; i < 7; i++) {
-			const d = new Date(monday);
-			d.setDate(monday.getDate() + i);
+		for (let i = 0; i < DAYS_PER_WEEK; i++) {
+			const date = new Date(monday);
+			date.setDate(monday.getDate() + i);
 
-			const dateKey = toNLDate(d);
+			const dateKey = toNLDateKey(date);
 			const minutes = Math.round(minutesPerDay[dateKey] ?? 0);
 
 			plumes.push({
 				date: dateKey,
 				minutes,
+
+				/*
+					visible:
+					- only show plumes for days up to today
+					- show if goal minutes reached
+				*/
 				visible: dateKey <= todayKey && minutes >= DAILY_GOAL_MINUTES
 			});
 		}
 
+		/* Average heart rate (today only) */
 		const avgHeartRate =
-		heartRateMinutesSum > 0
-			? Math.round(heartRateWeightedSum / heartRateMinutesSum)
-			: null;
+			heartRateMinutesSum > 0 ? Math.round(heartRateWeightedSum / heartRateMinutesSum) : null;
 
+		/* Response */
 		return json({
-			weekStart: toNLDate(monday),
+			weekStart: toNLDateKey(monday),
 			dailyGoalMinutes: DAILY_GOAL_MINUTES,
 			plumes,
 
-			/* 🔹 NEW OUTPUT */
+			/* Today stats */
 			workoutCalories: Math.round(workoutCalories),
 			workoutDurationMinutes: Math.round(workoutDurationMinutes),
-
 			avgHeartRate
 		});
 	} catch (err) {
 		console.error('[workout-coral] Failed:', err);
+
 		return json({ error: err?.message ?? 'Unknown error' }, { status: 500 });
 	}
 }

@@ -29,13 +29,13 @@ function getMonthWeekRange(week, date = new Date()) {
 
 	const startDay = week === 1 ? 1 : week === 2 ? 8 : week === 3 ? 15 : 22;
 
-	// endDay depends on week
+	/* endDay depends on week */
 	let endDay;
 	if (week === 1) endDay = 7;
 	else if (week === 2) endDay = 14;
 	else if (week === 3) endDay = 21;
 	else {
-		// last day of month
+		/* last day of month */
 		endDay = new Date(year, month + 1, 0).getDate();
 	}
 
@@ -71,7 +71,7 @@ export async function GET({ url, cookies }) {
 			if (!day?.start_time) continue;
 			const dateKey = toNLDate(day.start_time);
 
-			// only include selected week range
+			/* only include selected week range */
 			if (dateKey < startKey || dateKey > endKey) continue;
 
 			movementTotalSteps += day.steps ?? 0;
@@ -85,7 +85,7 @@ export async function GET({ url, cookies }) {
 		const sleeps = await polarFetch('users/sleep', cookies);
 		const nights = sleeps.nights ?? [];
 
-		// The sleep list is usually sorted newest first, so we filter by date range:
+		/* The sleep list is usually sorted newest first, so we filter by date range: */
 		let sleepTotalGrowth = 0;
 		let sleepNightsCounted = 0;
 
@@ -114,12 +114,13 @@ export async function GET({ url, cookies }) {
 		const exerciseRes = await polarFetch('exercises', cookies);
 		const exercises = Array.isArray(exerciseRes) ? exerciseRes : (exerciseRes?.exercises ?? []);
 
-		// accumulate minutes per day for selected range
+		/* accumulate minutes per day for selected range */
 		const minutesPerDay = {};
 
 		function durationToMinutes(duration) {
 			if (!duration || typeof duration !== 'string') return 0;
 
+			/* Parse ISO 8601 duration format (e.g., PT1H30M45S) */
 			const match = duration.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/);
 			if (!match) return 0;
 
@@ -141,7 +142,7 @@ export async function GET({ url, cookies }) {
 			minutesPerDay[dateKey] = (minutesPerDay[dateKey] ?? 0) + minutes;
 		}
 
-		// create 7 plume slots for week range days
+		/* create 7 plume slots for week range days */
 		const plumes = [];
 		const startDate = new Date(start);
 
@@ -149,7 +150,7 @@ export async function GET({ url, cookies }) {
 			const d = new Date(startDate);
 			d.setDate(startDate.getDate() + i);
 
-			// if week 4 and month ends early, stop
+			/* if week 4 and month ends early, stop */
 			if (d > end) break;
 
 			const dateKey = toNLDate(d);

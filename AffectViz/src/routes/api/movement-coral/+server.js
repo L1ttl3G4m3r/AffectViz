@@ -1,107 +1,161 @@
 import { json } from '@sveltejs/kit';
 import { polarFetch } from '$lib/server/polar.js';
 
-const DAILY_STEP_TARGET = 10000;
-const DAYS = 7;
-const WEEKLY_TARGET = DAILY_STEP_TARGET * DAYS;
+/* Steps goal used for weekly growth progress */
+const DAILY_STEP_TARGET = 10_000;
+const DAYS_PER_WEEK = 7;
+const WEEKLY_TARGET = DAILY_STEP_TARGET * DAYS_PER_WEEK;
 
-/* -------------------------------------------------
-   Convert date to NL-local YYYY-MM-DD
--------------------------------------------------- */
-function toNLDate(date) {
+/* Day labels shown in the UI chart (Mon–Sun) */
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+/* Timezone used for consistent week calculation + date keys */
+const NL_TIMEZONE = 'Europe/Amsterdam';
+
+/*
+ 	Convert any date/time value into a NL-local YYYY-MM-DD string.
+ 	(Uses locale "en-CA" because it produces YYYY-MM-DD format.)
+ */
+function toNLDateKey(date) {
 	return new Date(date).toLocaleDateString('en-CA', {
-		timeZone: 'Europe/Amsterdam'
+		timeZone: NL_TIMEZONE
 	});
 }
 
-/* -------------------------------------------------
-   Get Monday of current week (NL timezone)
--------------------------------------------------- */
-function getMondayNL() {
-	const now = new Date(
+/*
+ 	Get the current Date in the NL timezone (not system timezone).
+ */
+function getNowInNL() {
+	return new Date(
 		new Date().toLocaleString('en-US', {
-			timeZone: 'Europe/Amsterdam'
+			timeZone: NL_TIMEZONE
 		})
 	);
+}
 
-	const day = now.getDay(); // 0 = Sun
-	const diff = day === 0 ? -6 : 1 - day; // move to Monday
+/*
+ 	Get Monday 00:00 of the current week in NL timezone.
+ 	(Week starts on Monday.)
+ */
+function getMondayStartInNL() {
+	const now = getNowInNL();
 
-	now.setDate(now.getDate() + diff);
+	/* JS getDay(): 0 = Sunday, 1 = Monday, ... 6 = Saturday */
+	const dayOfWeek = now.getDay();
+
+	/* Convert current day into a shift that moves to Monday */
+	const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+	now.setDate(now.getDate() + diffToMonday);
 	now.setHours(0, 0, 0, 0);
 
 	return now;
 }
 
-/* -------------------------------------------------
-   Day labels (Mon–Sun)
--------------------------------------------------- */
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+/*
+	Ensure we always end up with a usable activities array.
+ */
+function normalizeActivityList(apiResponse) {
+	if (Array.isArray(apiResponse)) return apiResponse;
+	return apiResponse?.activities ?? [];
+}
+
+/*
+ 	Build two lookups:
+ 	- stepsPerDay[dateKey] = total steps that day
+ 	- caloriesPerDay[dateKey] = total calories that day
+ */
+function buildDailyTotals(activities) {
+	const stepsPerDay = {};
+	const caloriesPerDay = {};
+
+	for (const day of activities) {
+		if (!day?.start_time) continue;
+
+		const dateKey = toNLDateKey(day.start_time);
+
+		stepsPerDay[dateKey] = (stepsPerDay[dateKey] ?? 0) + (day.steps ?? 0);
+		caloriesPerDay[dateKey] = (caloriesPerDay[dateKey] ?? 0) + (day.calories ?? 0);
+	}
+
+	return { stepsPerDay, caloriesPerDay };
+}
+
+/*
+ 	Create the Mon–Sun dataset used for the weekly graph.
+ */
+function buildStepsByDay({ monday, stepsPerDay }) {
+	const stepsByDay = [];
+
+	for (let i = 0; i < DAYS_PER_WEEK; i++) {
+		const date = new Date(monday);
+		date.setDate(monday.getDate() + i);
+
+		const dateKey = toNLDateKey(date);
+
+		stepsByDay.push({
+			label: DAY_LABELS[i],
+			date: dateKey,
+			steps: Math.round(stepsPerDay[dateKey] ?? 0)
+		});
+	}
+
+	return stepsByDay;
+}
+
+/* ============================================================
+   GET /api/... ENDPOINT
+   ============================================================ */
 
 export async function GET({ cookies }) {
 	try {
-		const activities = await polarFetch('users/activities', cookies);
-		const list = Array.isArray(activities) ? activities : (activities.activities ?? []);
+		/* Fetch raw activity data from Polar */
+		const activitiesResponse = await polarFetch('users/activities', cookies);
+		const activities = normalizeActivityList(activitiesResponse);
 
-		// ✅ total steps (for growth)
-		const totalSteps = list.reduce((sum, day) => sum + (day.steps ?? 0), 0);
+		/* Total steps for the entire activity list (used for growth calculation) */
+		const totalSteps = activities.reduce((sum, day) => sum + (day.steps ?? 0), 0);
+
+		/*
+			Growth represents progress toward the weekly goal (0..1)
+			Example: 0.5 = 50% of weekly target
+		*/
 		const growth = Math.min(totalSteps / WEEKLY_TARGET, 1);
 
-		// ✅ Build lookup per date (YYYY-MM-DD)
-		const stepsPerDay = {};
-		const caloriesPerDay = {};
+		/* Build per-day totals (lookup tables) */
+		const { stepsPerDay, caloriesPerDay } = buildDailyTotals(activities);
 
-		for (const day of list) {
-			if (!day?.start_time) continue;
+		/* Build current week graph data (Mon–Sun in NL timezone) */
+		const monday = getMondayStartInNL();
+		const todayKey = toNLDateKey(new Date());
 
-			const dateKey = toNLDate(day.start_time);
+		const stepsByDay = buildStepsByDay({ monday, stepsPerDay });
 
-			stepsPerDay[dateKey] = (stepsPerDay[dateKey] ?? 0) + (day.steps ?? 0);
-			caloriesPerDay[dateKey] = (caloriesPerDay[dateKey] ?? 0) + (day.calories ?? 0);
-		}
-
-		// ✅ Current week Mon–Sun (NL timezone)
-		const monday = getMondayNL();
-		const todayKey = toNLDate(new Date());
-
-		const stepsByDay = [];
-
-		for (let i = 0; i < 7; i++) {
-			const d = new Date(monday);
-			d.setDate(monday.getDate() + i);
-
-			const dateKey = toNLDate(d);
-
-			stepsByDay.push({
-				label: DAY_LABELS[i],
-				date: dateKey,
-				steps: Math.round(stepsPerDay[dateKey] ?? 0)
-			});
-		}
-
-		// ✅ Today index (0–6)
+		/* Find today's position in the chart (0..6) */
 		const todayIndex = stepsByDay.findIndex((d) => d.date === todayKey);
 
-		// ✅ Today stats
+		/* Today-specific values */
 		const todaySteps = todayIndex >= 0 ? stepsByDay[todayIndex].steps : 0;
 		const calories = Math.round(caloriesPerDay[todayKey] ?? 0);
 
-		// ✅ Yesterday delta (nice for the UI, optional)
+		/* Optional: delta compared to yesterday */
 		let deltaFromYesterday = null;
+
 		if (todayIndex > 0) {
 			const yesterdaySteps = stepsByDay[todayIndex - 1]?.steps ?? 0;
 			deltaFromYesterday = todaySteps - yesterdaySteps;
 		}
 
+		/* Send data to frontend */
 		return json({
 			totalSteps,
 			weeklyTarget: WEEKLY_TARGET,
 			growth,
 
-			// ✅ Existing stat you already use in overlay
+			/* Used in your overlay stats card */
 			calories,
 
-			// ✅ NEW graph data
+			/* Used for your D3 chart */
 			stepsByDay,
 			todayIndex,
 			todaySteps,
@@ -109,6 +163,7 @@ export async function GET({ cookies }) {
 		});
 	} catch (err) {
 		console.error('[movement-coral]', err);
-		return json({ error: err.message ?? 'Failed to load movement coral data' }, { status: 500 });
+
+		return json({ error: err?.message ?? 'Failed to load movement coral data' }, { status: 500 });
 	}
 }
